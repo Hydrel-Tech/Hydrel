@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { ARCHITECTURES } from '../constants';
-import { SystemStatus } from '../types';
+import { ARCHITECTURES } from '../../constants';
+import { SystemStatus } from '../../types';
 
 export const ArchitecturesGrid: React.FC = () => {
   return (
