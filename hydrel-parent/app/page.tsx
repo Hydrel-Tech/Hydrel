@@ -1,4 +1,14 @@
-import { Hero } from '@/components/Hero'
+// app/page.tsx
+// This is the equivalent of the root rendered by /index.tsx in the original setup.
+// Move the complete content/logic from your original /index.tsx here as functional components.
+// The original <div id="root"></div> is replaced by Next.js SSR/CSR rendering.
+
+import React from "react";
+
+export default function Page() {
+  return (
+    <>
+      {import { Hero } from '@/components/Hero'
 import { ArchitecturesGrid } from '@/components/ArchitecturesGrid'
 import { FeaturedSystem } from '@/components/FeaturedSystem'
 import { HowItWorks } from '@/components/HowItWorks'
@@ -28,4 +38,7 @@ export default function Home() {
       </section>
     </>
   )
+}}
+    </>
+  );
 }
