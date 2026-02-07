@@ -13,9 +13,6 @@ import { ContactSection } from '@/components/ContactSection'
 export default function Page() {
   return (
     <>
-export default function Home() {
-  return (
-    <>
       <section id="hero">
         <Hero />
       </section>
