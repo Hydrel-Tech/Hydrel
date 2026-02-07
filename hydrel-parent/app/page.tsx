@@ -8,7 +8,8 @@ import React from "react";
 export default function Page() {
   return (
     <>
-      {import { Hero } from '@/components/Hero'
+      {
+import { Hero } from '@/components/Hero'
 import { ArchitecturesGrid } from '@/components/ArchitecturesGrid'
 import { FeaturedSystem } from '@/components/FeaturedSystem'
 import { HowItWorks } from '@/components/HowItWorks'
