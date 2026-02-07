@@ -4,16 +4,6 @@ import './globals.css'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 
-export const metadata: Metadata = {
-  title: 'Hydrel Systems Portfolio',
-  description: 'Advanced solutions for modern infrastructure',
-}
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) 
 const inter = Inter({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
@@ -22,9 +12,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Hydrel Systems Architectures",
-  viewport: "width=device-width, initial-scale=1.0",
-};
+  title: 'Hydrel Systems Portfolio',
+  description: 'Advanced solutions for modern infrastructure',
+  viewport: "width=device-width, initial-scale=1.0"
+}
 
 export default function RootLayout({
   children,
