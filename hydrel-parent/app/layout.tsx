@@ -30,18 +30,16 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>){
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning className={inter.variable>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body className="min-h-screen flex flex-col bg-[#f6f9fc] text-[#424770] overflow-x-hidden">
         <Navbar scrolled={false} />
-        
         <main className="flex-grow">
           {children}
         </main>
-
         <Footer />
       </body>
     </html>
   )
-}
+};
