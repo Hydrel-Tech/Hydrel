@@ -1,7 +1,13 @@
-
 import React from 'react';
 
 export const Hero: React.FC = () => {
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="relative min-h-[90vh] flex items-center overflow-hidden bg-white">
       {/* Stripe-style gradient background */}
@@ -36,12 +42,18 @@ export const Hero: React.FC = () => {
           </p>
           
           <div className="flex flex-wrap gap-4">
-            <a href="#architectures" className="px-8 py-4 bg-slate-900 text-white font-bold rounded-full shadow-lg hover:bg-slate-800 hover:shadow-xl transition-all hover:-translate-y-0.5">
+            <button 
+              onClick={() => scrollToSection('architectures')}
+              className="px-8 py-4 bg-slate-900 text-white font-bold rounded-full shadow-lg hover:bg-slate-800 hover:shadow-xl transition-all hover:-translate-y-0.5 cursor-pointer"
+            >
               Explore the Systems
-            </a>
-            <a href="#featured" className="px-8 py-4 bg-white text-slate-900 font-bold rounded-full hover:bg-slate-50 border border-slate-200 transition-colors">
-              View Architectures
-            </a>
+            </button>
+            <button 
+              onClick={() => scrollToSection('featured')}
+              className="px-8 py-4 bg-white text-slate-900 font-bold rounded-full hover:bg-slate-50 border border-slate-200 transition-colors cursor-pointer"
+            >
+              View Active Architectures
+            </button>
           </div>
         </div>
 
