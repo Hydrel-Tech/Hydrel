@@ -46,61 +46,39 @@ export const HyperPersonalizedOutboundSystem: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
             </span>
-            Technical Specifications
+            System Architecture
           </h2>
           
           <div className="space-y-8">
             <section>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">4.2 The Zero-Cost Tech Stack</h3>
-               <ul className="space-y-3 pl-4 border-l-2 border-emerald-500/30">
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Lead Identification:</strong> Google Maps Scraper (Python/Selenium) to find businesses in specific niches (e.g., "Plumbers in Austin" or "Marketing Agencies in New York").
-                </li>
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Data Enrichment:</strong> Custom scripts that visit the business website to extract owner names, "About Us" text, and recent news.
-                </li>
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Content Generation:</strong> Google Gemini API to read the website text and generate a personalized icebreaker.
-                </li>
-                 <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Orchestration:</strong> Google Sheets acts as the database, utilizing its API to read/write data, often triggered by local Python scripts.
-                </li>
-              </ul>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">4.2 Distributed Entity Recognition</h3>
+               <p className="text-slate-600 leading-relaxed text-sm mb-4">
+                 The system initiates by deploying a wide-net discovery protocol across geospatial indices and vertical-specific directories. Instead of relying on static databases, it performs real-time entity recognition to identify prospect organizations that match strict "ready-to-buy" signals. This ensures high-fidelity target lists that are updated to the second, bypassing the decay rates of traditional lead vendors.
+               </p>
             </section>
 
              <section>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">4.3 Technical Implementation: The Personalization Engine</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">4.3 The Personalization Engine</h3>
               
               <div className="mb-4">
-                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">4.3.1 Step 1: The "Harvester" (Maps Scraper)</h4>
-                  <p className="text-slate-600 text-sm mb-2">A Python script uses Selenium to browse Google Maps results. Google Maps is an underestimated source of B2B leads, containing up-to-date websites and phone numbers for millions of small businesses.</p>
-                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                      <li><strong>Logic:</strong> The script searches for a keyword (e.g., "Dental Clinic"), scrolls through the results sidebar, and extracts the "Website" and "Name" fields.</li>
-                      <li><strong>Zero Cost Advantage:</strong> This replaces tools like Apollo or ZoomInfo for local business leads, saving the client hundreds of dollars a month.</li>
-                  </ul>
+                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">4.3.1 Contextual Signal Harvesting</h4>
+                  <p className="text-slate-600 text-sm mb-2">
+                    Upon identification, the architecture deploys semantic crawlers to ingest public-facing organizational data. The system parses mission statements, recent news flashes, and leadership biographies to construct a comprehensive psychographic profile of the target entity.
+                  </p>
               </div>
 
               <div className="mb-4">
-                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">4.3.2 Step 2: The "Researcher" (Website Scraper)</h4>
-                  <p className="text-slate-600 text-sm mb-2">The system iterates through the list of collected websites.</p>
-                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                      <li><strong>Action:</strong> It visits each URL and scrapes the text from the Homepage and the "About Us" page.</li>
-                      <li><strong>Filtering:</strong> It checks for keywords that indicate a good fit (e.g., "expanding," "hiring," "new location") or a bad fit (e.g., "no soliciting," "closed").</li>
-                  </ul>
+                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">4.3.2 Generative Outreach Synthesis</h4>
+                  <p className="text-slate-600 text-sm mb-2">
+                    Utilizing advanced large language model inference, the system synthesizes the harvested context into hyper-personalized communication artifacts. It does not simply fill in blanks; it constructs bespoke opening narratives that demonstrate deep research and relevance, mirroring the cognitive output of a human sales development representative but at infinite scale.
+                  </p>
               </div>
 
                <div className="mb-4">
-                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">4.3.3 Step 3: The "Copywriter" (Gemini)</h4>
-                  <p className="text-slate-600 text-sm mb-2">The scraped website text is fed into Gemini with a strict prompt to generate a "First Line."</p>
-                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                      <li><strong>Prompt Strategy:</strong> "You are a sales researcher. Read the following text from a Dental Clinic's website:. Identify a unique selling point, a specific doctor's name, or a recent award they won. Write a single sentence complimenting them on this specific detail. The sentence must be casual, under 20 words, and sound like it was written by a human. Do not use buzzwords."</li>
-                      <li><strong>Result:</strong> "Saw Dr. Smith won the local 'Best Smiles' award last month—congrats on the recognition.".</li>
-                  </ul>
-              </div>
-
-               <div className="mb-4">
-                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">4.3.4 Step 4: Verification and Delivery</h4>
-                  <p className="text-slate-600 text-sm mb-2">Before delivery, the script verifies the email format (if scraped) or simply prepares the file for the client to find emails. The final deliverable is a Google Sheet or CSV containing 500-1,000 leads, each with a bespoke, AI-written opening line.</p>
+                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">4.3.3 Protocol Verification</h4>
+                  <p className="text-slate-600 text-sm mb-2">
+                    Before final dispatch, all synthesized outputs undergo a structural verification process. This ensures communication protocols adhere to deliverability standards and domain reputation safeguards, maximizing the probability of inbox placement and positive engagement.
+                  </p>
               </div>
 
             </section>
