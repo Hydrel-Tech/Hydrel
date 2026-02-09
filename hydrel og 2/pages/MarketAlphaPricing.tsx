@@ -14,7 +14,7 @@ const pricingTiers = [
   },
   {
     name: 'Student',
-    price: '$49',
+    price: '$89',
     zips: '6',
     desc: 'Pro features for students. Includes advanced analytics, enhanced reports, limited data exports, and priority support. Designed for postgraduates, senior or junior interns in real estate programs.',
     discount: 'Discounted ~40% from full Pro',
@@ -24,7 +24,7 @@ const pricingTiers = [
   },
   {
     name: 'Pro',
-    price: '$82',
+    price: '$179',
     zips: '10',
     desc: 'Full Pro features. Everything Student has plus advanced alerts, expert insights, and actionable recommendations. Ideal for serious analysts looking to boost at least one extra property per month. Moderate geographical range.',
     color: 'bg-[#FFF0F0]', // Light reddish tint
@@ -33,7 +33,7 @@ const pricingTiers = [
   },
   {
     name: 'Ultra',
-    price: '$189',
+    price: '$279',
     zips: '30',
     desc: 'Advanced analytics for high-volume users. Includes all Pro features, advanced insights, detailed reports, wider geographical range across metropolitan America, enhanced exports and alerts. Perfect for professionals managing multiple metro areas.',
     color: 'bg-[#FFE5E5]', // Stronger red tint
@@ -42,7 +42,7 @@ const pricingTiers = [
   },
   {
     name: 'Ultra Plus',
-    price: '$378',
+    price: '$379',
     zips: 'Unlimited',
     desc: 'Unlimited power. Everything Ultra has but with unlimited zip codes and coverage across all USA metro areas. Designed for agencies and power users who need complete access and maximum flexibility.',
     color: 'bg-[#FFD6D6]', // Deepest red tint
