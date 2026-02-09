@@ -46,45 +46,32 @@ export const NicheCommercialDataMining: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
             </span>
-            Technical Specifications
+            System Architecture
           </h2>
           
           <div className="space-y-8">
             <section>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">6.2 The Zero-Cost Tech Stack</h3>
-               <ul className="space-y-3 pl-4 border-l-2 border-emerald-500/30">
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Scraping:</strong> Playwright or Selenium for dynamic sites (Craigslist, Yelp, Industry Directories).
-                </li>
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Anti-Blocking:</strong> Managing headers, User-Agents, and request timing (randomized delays) to avoid detection without paying for premium proxies.
-                </li>
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Filtering:</strong> Using Python text analysis or Gemini to filter out bad leads (e.g., removing businesses with "no soliciting" on their site).
-                </li>
-              </ul>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">6.2 Deep Web Traversal</h3>
+               <p className="text-slate-600 leading-relaxed text-sm mb-4">
+                 The system employs advanced traversal protocols to access non-indexed and dynamic web layers. It utilizes heuristics to navigate complex DOM structures and bypass standard visibility filters. This allows for the extraction of ephemeral opportunity signals—such as real-time service requests or membership rosters—that remain invisible to standard commercial scraping tools.
+               </p>
             </section>
 
              <section>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">6.3 Technical Implementation: The Directory Monitor</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">6.3 The Monitor Protocol</h3>
               
               <div className="mb-4">
-                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">6.3.1 The "Craigslist/Directory" Scraper</h4>
-                  <p className="text-slate-600 text-sm mb-2">Many service businesses (e.g., Commercial Cleaners) still find leads on Craigslist "Gigs" or specialized forums.</p>
-                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                      <li><strong>Workflow:</strong> A Python script monitors the "Services Needed" or "Gigs" section of Craigslist in 50 major cities.</li>
-                      <li><strong>Alerting:</strong> When a relevant post appears (e.g., "Need commercial cleaning for 5000 sq ft office"), the script captures the contact info.</li>
-                       <li><strong>AI Drafting:</strong> It uses Gemini to read the post and draft a specific reply: "Hi, I see you need cleaning for a 5k sq ft office. We specialize in mid-sized commercial spaces...".</li>
-                  </ul>
+                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">6.3.1 Signal Pattern Matching</h4>
+                  <p className="text-slate-600 text-sm mb-2">
+                    Rather than collecting bulk data, the architecture uses specific pattern-matching algorithms to detect intent. It scans high-velocity feed environments for semantic triggers indicating a commercial need. Upon detection, the system isolates the entity and captures the metadata required for immediate engagement.
+                  </p>
               </div>
 
               <div className="mb-4">
-                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">6.3.2 The "Association" Miner</h4>
-                  <p className="text-slate-600 text-sm mb-2">Many industries have trade associations with public member directories (e.g., "American Dental Association" local chapters). These are high-quality, verified businesses.</p>
-                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                      <li><strong>Workflow:</strong> A custom script iterates through the directory pages, extracting member details.</li>
-                      <li><strong>Enrichment:</strong> It then visits each member's website to find the specific email of the "Practice Manager" (often listed on the "Team" page), bypassing the generic " info@ " email.</li>
-                  </ul>
+                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">6.3.2 Association Member Resolution</h4>
+                  <p className="text-slate-600 text-sm mb-2">
+                    For static directory mining, the system implements a recursive resolution strategy. It not only aggregates member lists but performs a secondary traversal to resolve specific decision-maker contact points. This bypasses generic gatekeeper channels, ensuring that the delivered dataset contains direct-access routing information for key personnel.
+                  </p>
               </div>
 
             </section>
