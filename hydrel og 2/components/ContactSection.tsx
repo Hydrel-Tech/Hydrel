@@ -60,10 +60,10 @@ export const ContactSection: React.FC = () => {
                 type="submit" 
                 className="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 hover:scale-[1.02] transition-all"
               >
-                Request Access
+                Request Simulation
               </button>
-              <p className="text-[10px] text-center text-slate-400 px-8">
-                By requesting access, you agree to our professional engagement protocols and data protection standards.
+              <p className="text-[10px] text-center text-slate-400 px-4 leading-tight">
+                Only use this form if you require a guided demonstration or video proof of the active architecture. For all other inquiries or to deploy immediately, please use the "Learn More" buttons on the specific architecture pages.
               </p>
             </form>
           )}
