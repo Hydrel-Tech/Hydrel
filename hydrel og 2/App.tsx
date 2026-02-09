@@ -8,6 +8,7 @@ import ScrollToTop from './components/ScrollToTop';
 
 // Pages
 import { MarketAlpha } from './pages/MarketAlpha';
+import { MarketAlphaPricing } from './pages/MarketAlphaPricing';
 import { HyperPersonalizedOutboundSystem } from './pages/HyperPersonalizedOutboundSystem';
 import { UnifiedMarketingIntelligence } from './pages/UnifiedMarketingIntelligence';
 import { NicheCommercialDataMining } from './pages/NicheCommercialDataMining';
@@ -33,6 +34,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/market-alpha" element={<MarketAlpha />} />
+            <Route path="/market-alpha/pricing" element={<MarketAlphaPricing />} />
             <Route path="/HyperPersonalizedOutboundSystem" element={<HyperPersonalizedOutboundSystem />} />
             <Route path="/UnifiedMarketingIntelligence" element={<UnifiedMarketingIntelligence />} />
             <Route path="/NicheCommercialDataMining" element={<NicheCommercialDataMining />} />
