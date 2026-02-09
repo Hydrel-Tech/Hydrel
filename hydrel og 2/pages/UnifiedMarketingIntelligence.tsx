@@ -46,53 +46,39 @@ export const UnifiedMarketingIntelligence: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
             </span>
-            Technical Specifications
+            System Architecture
           </h2>
           
           <div className="space-y-8">
             <section>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">5.2 The Zero-Cost Tech Stack</h3>
-               <ul className="space-y-3 pl-4 border-l-2 border-emerald-500/30">
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Data Sources:</strong> Facebook Marketing API (Free access), Google Ads API (Free access), Google Analytics 4 API. All of these have free tiers for data retrieval.
-                </li>
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Backend:</strong> Python script using official client libraries (google-ads, facebook_business) to fetch daily performance data.
-                </li>
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Storage:</strong> Google Sheets (acting as a lightweight, free database) or local JSON files stored in the repo.
-                </li>
-                 <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Frontend:</strong> Streamlit dashboard hosted on Vercel or Streamlit Community Cloud.
-                </li>
-              </ul>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">5.2 Cross-Platform Data Normalization</h3>
+               <p className="text-slate-600 leading-relaxed text-sm mb-4">
+                 The architecture functions as a universal data bridge, establishing secure, authenticated pipelines into disparate advertising and analytics environments. It autonomously retrieves disparate metric sets and subjects them to a rigorous normalization protocol. This standardization process ensures that "apples-to-apples" comparisons can be made across channels, eliminating the friction of manual data aggregation.
+               </p>
             </section>
 
              <section>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">5.3 Technical Implementation: The "Connector" Script</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">5.3 The "Connector" Protocol</h3>
               
               <div className="mb-4">
-                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">5.3.1 API Authentication & Retrieval</h4>
-                  <p className="text-slate-600 text-sm mb-2">The core of this service is a Python script that handles the OAuth2 authentication flows to connect to the client's ad accounts. This is a one-time setup complexity that the service provider manages, creating "vendor lock-in" via convenience.</p>
-                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                      <li><strong>Logic:</strong> The script fetches "Yesterday's Spend," "Clicks," "Impressions," and "Conversions" from all platforms.</li>
-                      <li><strong>Transformation:</strong> It normalizes the data (e.g., matching Facebook's "Ad Spend" column with Google's "Cost" column) to create a unified dataset.</li>
-                  </ul>
+                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">5.3.1 Ingestion & Transformation</h4>
+                  <p className="text-slate-600 text-sm mb-2">
+                    The system executes scheduled data pulls to harvest performance telemetry. It creates a unified schema that maps varying definitions of "conversion" and "spend" into a singular, coherent truth source. This backend complexity is entirely abstracted from the user, providing a seamless data lake experience without the infrastructure overhead.
+                  </p>
               </div>
 
               <div className="mb-4">
-                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">5.3.2 The "AI Analyst" Feature</h4>
-                  <p className="text-slate-600 text-sm mb-2">Unlike generic dashboards (like Looker Studio), a Python-based dashboard allows for complex logic and AI integration.</p>
-                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                      <li><strong>Gemini Integration:</strong> The script feeds the daily performance summary to Gemini.</li>
-                      <li><strong>Prompt:</strong> "Analyze yesterday's ad performance across Facebook and Google. Total Spend: $500. Facebook ROAS: 2.1. Google ROAS: 4.5. CPA on Facebook increased by 20%. Suggest three optimization actions for the media buyer."</li>
-                      <li><strong>Value:</strong> The dashboard displays these AI-generated insights in a "Morning Briefing" widget. This elevates the tool from a passive report to an active consultant.</li>
-                  </ul>
+                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">5.3.2 Narrative Intelligence Generation</h4>
+                  <p className="text-slate-600 text-sm mb-2">
+                    Beyond visualization, the architecture employs an advanced analytical layer to detect anomalies and trend deviations. It transforms raw numeric variation into semantic briefings—generating written, strategic insights that explain performance shifts. This elevates the system from a passive dashboard to an active intelligence officer that pushes recommendations to stakeholders.
+                  </p>
               </div>
 
                <div className="mb-4">
-                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">5.3.3 Automated Reporting</h4>
-                  <p className="text-slate-600 text-sm mb-2">The system can also use the Gmail API to email a PDF summary (generated via Python's FPDF library) of the dashboard to the client every Monday morning automatically. This "push" notification ensures the client sees value even if they don't log in.</p>
+                  <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2">5.3.3 Push-Protocol Delivery</h4>
+                  <p className="text-slate-600 text-sm mb-2">
+                    To ensure strategic alignment, the system utilizes a push-protocol to deliver synthesized intelligence directly to decision-makers. This automated dissemination ensures that critical performance data and optimization strategies are reviewed without requiring active login, maintaining high situational awareness across the growth team.
+                  </p>
               </div>
 
             </section>
