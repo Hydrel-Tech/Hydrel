@@ -32,7 +32,7 @@ export const MarketAlpha: React.FC = () => {
           <h2 className="text-2xl font-bold text-slate-900 mb-6">System Overview</h2>
           <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/40">
             <p className="text-lg text-slate-600 leading-relaxed mb-6 font-medium">
-              Instead of paying thousands of dollars for Bloomberg terminals or premium data feeds like CoreLogic or CoStar, this "Deal Finder" service stitches together free, high-quality data sources to democratize institutional-grade analysis.
+              Instead of paying thousands of dollars for Bloomberg terminals or premium data feeds, this "Deal Finder" service stitches together free, high-quality data sources to democratize institutional-grade analysis.
             </p>
             <p className="text-lg text-slate-600 leading-relaxed mb-6">
               In highly competitive real estate markets, speed and data are the only real advantages. This system acts as an automated analyst that doesn't just look for houses, but "underwrites" them instantly.
@@ -51,7 +51,7 @@ export const MarketAlpha: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
             </span>
-            System Architecture
+            Technical Analysis
           </h2>
           
           <div className="space-y-8">
