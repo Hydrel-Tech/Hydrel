@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export const MarketAlpha: React.FC = () => {
   return (
@@ -50,77 +51,45 @@ export const MarketAlpha: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
             </span>
-            Technical Specifications
+            System Architecture
           </h2>
           
           <div className="space-y-8">
             <section>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">3.2.1 Listing Data Aggregation</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">3.2.1 Autonomous Market Ingestion</h3>
               <p className="text-slate-600 leading-relaxed text-sm mb-4">
-                The primary input is active listing data. Realtor.com or smaller, local MLS aggregators are often more accessible for low-volume, targeted scraping.
+                The architecture employs a decentralized intake protocol that continuously monitors market availability across fractured endpoints. Rather than relying on static feeds, the system actively queries localized indices to ensure real-time fidelity of asset availability, pricing latency, and visual condition markers.
               </p>
-              <ul className="space-y-3 pl-4 border-l-2 border-emerald-500/30">
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Mechanism:</strong> A Python script using Selenium or Playwright navigates to target searches (e.g., "3bd 2ba houses in 78702 under $600k").
-                </li>
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Extraction:</strong> It extracts key fields: Price, Address, SqFt, Days on Market, and Image URLs.
-                </li>
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Compliance:</strong> The scraper respects robots.txt where possible and uses rate limiting (e.g., one request every 10-20 seconds) to act as a "polite" human browser, avoiding IP bans.
-                </li>
-              </ul>
             </section>
 
             <section>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">3.2.2 Demographic and Economic Context</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">3.2.2 Contextual Demographic Layering</h3>
               <p className="text-slate-600 leading-relaxed text-sm mb-4">
-                A listing price is meaningless without context. The US Census Bureau API is a powerful, free resource that provides granular data on household income, population growth, and employment stats at the census tract level.
+                Raw asset data is insufficient for institutional decision-making. The system automatically overlays high-dimensional socioeconomic vectors onto every target asset. This includes longitudinal trends in household economics, population density shifts, and stability metrics, allowing for an immediate assessment of neighborhood gentrification trajectories and long-term holding viability.
               </p>
-              <ul className="space-y-3 pl-4 border-l-2 border-emerald-500/30">
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Integration:</strong> The Python script takes the property's Zip Code or FIPS code and queries the Census API.
-                </li>
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Insight:</strong> It appends data points like "Median Household Income Growth (5yr)" or "Owner-Occupied vs. Renter-Occupied Ratio" to the listing data. This helps investors identify gentrifying neighborhoods.
-                </li>
-              </ul>
             </section>
 
             <section>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">3.2.3 Rental and Valuation Data</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">3.2.3 Predictive Yield Modeling</h3>
               <p className="text-slate-600 leading-relaxed text-sm mb-4">
-                To calculate ROI, investors need rental estimates. The RentCast API offers a free tier (50 calls/month).
+                To move beyond simple price-per-square-foot analysis, the infrastructure utilizes a multi-stage funnel for valuation. By cross-referencing localized rental performance data with acquisition costs, the system synthesizes a projected profitability index. This ensures that only assets with a mathematically probable spread between cap rate and cost of capital are surfaced for review.
               </p>
-              <ul className="space-y-3 pl-4 border-l-2 border-emerald-500/30">
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Strategic Usage:</strong> To stay within the free limit, the system does not query RentCast for every property. Instead, the script first filters the 100 scraped listings down to the "Top 10" based on price-per-sqft and demographic trends. Only these Top 10 are sent to the RentCast API for precise rental valuation. This "funnel" approach maximizes the value.
-                </li>
-              </ul>
             </section>
 
              <section>
-              <h3 className="text-lg font-bold text-slate-800 mb-3">3.3 The "Reasoning Engine": Gemini's Role</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-3">3.3 The Reasoning Engine</h3>
               <p className="text-slate-600 leading-relaxed text-sm mb-4">
-                Once the raw data is aggregated (Listing + Demographics + Rent), it is fed into Google Gemini.
+                The final layer of the architecture is a probabilistic reasoning engine that acts as a synthetic underwriter. It ingests the aggregated technical and demographic data to produce a qualitative narrative risk assessment. This output mimics senior analyst scrutiny, identifying non-numerical risks and advantages to provide a "go/no-go" recommendation with explainable logic.
               </p>
-              <ul className="space-y-3 pl-4 border-l-2 border-emerald-500/30">
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Prompt Engineering:</strong> "Act as a senior real estate investment analyst. Review the following property data:. Calculate the estimated Gross Yield and Cash-on-Cash return assuming 20% down. Compare this to the 'Rule of 1%'. Identify two pros and two risks for this specific investment based on the demographic trends."
-                </li>
-                <li className="text-sm text-slate-600">
-                  <strong className="text-slate-800">Output:</strong> Gemini generates a narrative paragraph for each property, explaining why it is a good or bad deal. This mimics the output of a human analyst.
-                </li>
-              </ul>
             </section>
           </div>
         </div>
 
         {/* CTA */}
         <div className="mt-16 text-center">
-          <button className="px-10 py-5 bg-emerald-600 text-white font-bold rounded-xl shadow-xl shadow-emerald-500/30 hover:bg-emerald-700 hover:scale-[1.02] transition-all transform duration-200">
+          <Link to="/market-alpha/pricing" className="inline-block px-10 py-5 bg-emerald-600 text-white font-bold rounded-xl shadow-xl shadow-emerald-500/30 hover:bg-emerald-700 hover:scale-[1.02] transition-all transform duration-200">
             Get System
-          </button>
+          </Link>
           <p className="mt-4 text-xs text-slate-400 font-medium">Deployed within 48 hours to secure infrastructure.</p>
         </div>
       </div>
