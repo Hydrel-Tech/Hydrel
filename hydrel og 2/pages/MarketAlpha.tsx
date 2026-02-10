@@ -90,7 +90,7 @@ export const MarketAlpha: React.FC = () => {
           <Link to="/market-alpha/pricing" className="inline-block px-10 py-5 bg-emerald-600 text-white font-bold rounded-xl shadow-xl shadow-emerald-500/30 hover:bg-emerald-700 hover:scale-[1.02] transition-all transform duration-200">
             Get System
           </Link>
-          <p className="mt-4 text-xs text-slate-400 font-medium">Deployed within 48 hours to secure infrastructure.</p>
+          <p className="mt-4 text-xs text-slate-400 font-medium">Available within 24 hours.</p>
         </div>
       </div>
     </div>
