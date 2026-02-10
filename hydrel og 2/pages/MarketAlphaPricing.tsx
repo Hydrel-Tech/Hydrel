@@ -15,7 +15,7 @@ const pricingTiers = [
   {
     name: 'Student',
     price: '$89',
-    zips: '6',
+    zips: '10',
     desc: 'Pro features for students. Includes advanced analytics, enhanced reports, limited data exports, and priority support. Designed for postgraduates, senior or junior interns in real estate programs.',
     discount: 'Discounted OFF 50% from Pro',
     color: 'bg-[#FFF8F5]', // Gold with slight red/warmth
