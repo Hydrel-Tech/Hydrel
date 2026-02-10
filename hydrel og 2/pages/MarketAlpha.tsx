@@ -29,10 +29,14 @@ export const MarketAlpha: React.FC = () => {
         
         {/* Layman Overview */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">System Overview</h2>
-          <p className="text-xs font-bold text-red-500 uppercase tracking-widest mb-6">
-            Secure AT LEAST ONE extra deal monthly!
-          </p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">System Overview</h2>
+          
+          <div className="inline-block px-5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 mb-6 shadow-sm">
+             <p className="text-sm font-bold text-red-600 tracking-wide">
+               Secure <span className="font-black">AT LEAST ONE</span> extra deal monthly!
+             </p>
+          </div>
+
           <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/40">
             <p className="text-lg text-slate-600 leading-relaxed mb-6 font-medium">
               Instead of paying thousands of dollars for Bloomberg terminals or premium data feeds, this "Deal Finder" service stitches together free, high-quality data sources to democratize institutional-grade analysis.
@@ -93,7 +97,7 @@ export const MarketAlpha: React.FC = () => {
           <Link to="/market-alpha/pricing" className="inline-block px-10 py-5 bg-emerald-600 text-white font-bold rounded-xl shadow-xl shadow-emerald-500/30 hover:bg-emerald-700 hover:scale-[1.02] transition-all transform duration-200">
             Get System
           </Link>
-          <p className="mt-4 text-xs text-slate-400 font-medium">Available Instantly! .</p>
+          <p className="mt-4 text-xs text-slate-400 font-medium">Deployed within 48 hours to secure infrastructure.</p>
         </div>
       </div>
     </div>
