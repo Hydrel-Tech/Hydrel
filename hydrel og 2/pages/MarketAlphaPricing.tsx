@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const pricingTiers = [
   {
-    name: 'Starter (Low Netty)',
+    name: 'Starter (Low)',
     price: '$0',
     zips: '2',
     desc: 'Basic analytics only. Get a feel for the system with essential insights in a limited geographical range. Ideal for trying out the core capabilities of the platform without commitment.',
