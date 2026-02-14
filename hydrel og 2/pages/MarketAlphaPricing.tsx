@@ -34,7 +34,7 @@ const pricingTiers = [
   {
     name: 'Ultra',
     price: '$279',
-    zips: '30',
+    zips: '20',
     desc: 'Advanced analytics for high-volume users. Includes all Pro features, advanced insights, detailed reports, wider geographical range across metropolitan America, enhanced exports and alerts. Perfect for professionals managing multiple metro areas.',
     color: 'bg-[#FFE5E5]', // Stronger red tint
     buttonColor: 'bg-emerald-600',
