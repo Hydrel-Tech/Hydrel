@@ -13,8 +13,18 @@ export const Footer: React.FC = () => {
           {/* Brand Column */}
           <div className="col-span-1">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-6 h-6 bg-indigo-600 rounded-md flex items-center justify-center transform -rotate-12">
-                <div className="w-3 h-3 bg-white rounded-sm rotate-12" />
+              <div className="relative w-6 h-6">
+                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full filter drop-shadow-sm">
+                  <defs>
+                    <linearGradient id="cubeGradientFooter" x1="12" y1="2" x2="12" y2="23" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#4338ca" />
+                      <stop offset="1" stopColor="#312e81" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M12 2L2.5 7.5V17.5L12 23L21.5 17.5V7.5L12 2Z" fill="url(#cubeGradientFooter)" stroke="#6366f1" strokeWidth="1" strokeLinejoin="round"/>
+                  <path d="M12 2V12.5M21.5 7.5L12 12.5M2.5 7.5L12 12.5" stroke="#6366f1" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="-1" y1="13" x2="25" y2="13" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" className="drop-shadow-[0_0_6px_rgba(239,68,68,0.9)]" />
+               </svg>
               </div>
               <span className="text-lg font-bold tracking-tight text-slate-900">
                 HYDREL
