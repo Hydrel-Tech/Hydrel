@@ -46,9 +46,19 @@ export const Navbar: React.FC<NavbarProps> = ({ scrolled }) => {
         scrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-6'
       }`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-12 group-hover:rotate-0 transition-transform duration-300">
-              <div className="w-4 h-4 bg-white rounded-sm rotate-12 group-hover:rotate-0 transition-transform duration-300" />
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="relative w-8 h-8 transform group-hover:scale-110 transition-transform duration-300">
+               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full filter drop-shadow-sm">
+                  <defs>
+                    <linearGradient id="cubeGradientNav" x1="12" y1="2" x2="12" y2="23" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#4338ca" />
+                      <stop offset="1" stopColor="#312e81" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M12 2L2.5 7.5V17.5L12 23L21.5 17.5V7.5L12 2Z" fill="url(#cubeGradientNav)" stroke="#6366f1" strokeWidth="1" strokeLinejoin="round"/>
+                  <path d="M12 2V12.5M21.5 7.5L12 12.5M2.5 7.5L12 12.5" stroke="#6366f1" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="-1" y1="13" x2="25" y2="13" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" className="drop-shadow-[0_0_6px_rgba(239,68,68,0.9)]" />
+               </svg>
             </div>
             <span className={`text-xl font-bold tracking-tight ${scrolled ? 'text-slate-900' : 'text-white'}`}>
               HYDREL
