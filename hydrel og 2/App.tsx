@@ -5,6 +5,7 @@ import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './components/Home';
 import ScrollToTop from './components/ScrollToTop';
+import { AuthProvider } from './context/AuthContext';
 
 // Pages
 import { MarketAlpha } from './pages/MarketAlpha';
@@ -12,6 +13,7 @@ import { MarketAlphaPricing } from './pages/MarketAlphaPricing';
 import { HyperPersonalizedOutboundSystem } from './pages/HyperPersonalizedOutboundSystem';
 import { UnifiedMarketingIntelligence } from './pages/UnifiedMarketingIntelligence';
 import { NicheCommercialDataMining } from './pages/NicheCommercialDataMining';
+import { Signup } from './pages/Signup';
 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -25,25 +27,40 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <Router>
-      <ScrollToTop />
-      <div className="min-h-screen flex flex-col">
-        <Navbar scrolled={scrolled} />
-        
-        <main className="flex-grow">
+    <AuthProvider>
+      <Router>
+        <ScrollToTop />
+        <div className="min-h-screen flex flex-col">
+          {/* Navbar is conditional inside Signup page if we wanted, but keeping it simple for now. 
+              The Signup page design in requirements seemed standalone (nested subpage), 
+              so we might conditionally render Navbar or let the Signup page cover it.
+              Based on the design, Signup page has its own back button, but Navbar is global.
+              We can hide Navbar on signup route if desired, but user didn't explicitly ask to hide it.
+          */}
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/market-alpha" element={<MarketAlpha />} />
-            <Route path="/market-alpha/pricing" element={<MarketAlphaPricing />} />
-            <Route path="/HyperPersonalizedOutboundSystem" element={<HyperPersonalizedOutboundSystem />} />
-            <Route path="/UnifiedMarketingIntelligence" element={<UnifiedMarketingIntelligence />} />
-            <Route path="/NicheCommercialDataMining" element={<NicheCommercialDataMining />} />
+             <Route path="/signup" element={<></>} /> {/* Hack to hide navbar on signup if needed, but let's just render it globally mostly */}
+             <Route path="*" element={<Navbar scrolled={scrolled} />} />
           </Routes>
-        </main>
+          
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/market-alpha" element={<MarketAlpha />} />
+              <Route path="/market-alpha/pricing" element={<MarketAlphaPricing />} />
+              <Route path="/HyperPersonalizedOutboundSystem" element={<HyperPersonalizedOutboundSystem />} />
+              <Route path="/UnifiedMarketingIntelligence" element={<UnifiedMarketingIntelligence />} />
+              <Route path="/NicheCommercialDataMining" element={<NicheCommercialDataMining />} />
+              <Route path="/signup" element={<Signup />} />
+            </Routes>
+          </main>
 
-        <Footer />
-      </div>
-    </Router>
+          <Routes>
+            <Route path="/signup" element={<></>} />
+            <Route path="*" element={<Footer />} />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   );
 };
 
