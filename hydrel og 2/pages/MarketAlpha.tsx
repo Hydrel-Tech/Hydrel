@@ -1,8 +1,22 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { LoginModal } from '../components/LoginModal';
 
 export const MarketAlpha: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  const handleGetSystem = () => {
+    if (user) {
+      navigate('/market-alpha/pricing');
+    } else {
+      setIsLoginOpen(true);
+    }
+  };
+
   return (
     <div className="bg-[#f6f9fc] min-h-screen pt-24 pb-20">
       {/* Hero Header */}
@@ -94,12 +108,17 @@ export const MarketAlpha: React.FC = () => {
 
         {/* CTA */}
         <div className="mt-16 text-center">
-          <Link to="/market-alpha/pricing" className="inline-block px-10 py-5 bg-emerald-600 text-white font-bold rounded-xl shadow-xl shadow-emerald-500/30 hover:bg-emerald-700 hover:scale-[1.02] transition-all transform duration-200">
+          <button 
+            onClick={handleGetSystem}
+            className="inline-block px-10 py-5 bg-emerald-600 text-white font-bold rounded-xl shadow-xl shadow-emerald-500/30 hover:bg-emerald-700 hover:scale-[1.02] transition-all transform duration-200"
+          >
             Get System
-          </Link>
+          </button>
           <p className="mt-4 text-xs text-slate-400 font-medium">Deployed within 48 hours to secure infrastructure.</p>
         </div>
       </div>
+
+      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </div>
   );
 };
