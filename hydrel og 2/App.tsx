@@ -10,6 +10,7 @@ import { AuthProvider } from './context/AuthContext';
 // Pages
 import { MarketAlpha } from './pages/MarketAlpha';
 import { MarketAlphaPricing } from './pages/MarketAlphaPricing';
+import { MarketAlphaDashboard } from './pages/MarketAlphaDashboard';
 import { HyperPersonalizedOutboundSystem } from './pages/HyperPersonalizedOutboundSystem';
 import { UnifiedMarketingIntelligence } from './pages/UnifiedMarketingIntelligence';
 import { NicheCommercialDataMining } from './pages/NicheCommercialDataMining';
@@ -38,7 +39,8 @@ const App: React.FC = () => {
               We can hide Navbar on signup route if desired, but user didn't explicitly ask to hide it.
           */}
           <Routes>
-             <Route path="/signup" element={<></>} /> {/* Hack to hide navbar on signup if needed, but let's just render it globally mostly */}
+             <Route path="/signup" element={<></>} />
+             <Route path="/market-alpha/dashboard" element={<></>} /> {/* Hide default navbar on dashboard */}
              <Route path="*" element={<Navbar scrolled={scrolled} />} />
           </Routes>
           
@@ -47,6 +49,7 @@ const App: React.FC = () => {
               <Route path="/" element={<Home />} />
               <Route path="/market-alpha" element={<MarketAlpha />} />
               <Route path="/market-alpha/pricing" element={<MarketAlphaPricing />} />
+              <Route path="/market-alpha/dashboard" element={<MarketAlphaDashboard />} />
               <Route path="/HyperPersonalizedOutboundSystem" element={<HyperPersonalizedOutboundSystem />} />
               <Route path="/UnifiedMarketingIntelligence" element={<UnifiedMarketingIntelligence />} />
               <Route path="/NicheCommercialDataMining" element={<NicheCommercialDataMining />} />
@@ -56,6 +59,7 @@ const App: React.FC = () => {
 
           <Routes>
             <Route path="/signup" element={<></>} />
+            <Route path="/market-alpha/dashboard" element={<></>} /> {/* Hide default footer on dashboard */}
             <Route path="*" element={<Footer />} />
           </Routes>
         </div>
