@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
+import UsaMap from '../components/UsaMap';   // or the correct relative path
 
 // --- Types & Constants ---
 type AgentMode = 'buying' | 'listing';
