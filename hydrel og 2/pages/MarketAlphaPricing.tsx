@@ -46,16 +46,19 @@ const pricingTiers = [
 export const MarketAlphaPricing: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  // -1 indicates not logged in or no tier loaded yet (default state for visitors)
   const [currentTierLevel, setCurrentTierLevel] = useState<number>(-1); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserTier = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+    // If no user, reset to -1 immediately so buttons show "Choose Plan"
+    if (!user) {
+      setCurrentTierLevel(-1);
+      setLoading(false);
+      return;
+    }
 
+    const fetchUserTier = async () => {
       try {
         const { data, error } = await supabase
           .from('user_tiers')
@@ -65,8 +68,7 @@ export const MarketAlphaPricing: React.FC = () => {
 
         if (error && error.code !== 'PGRST116') {
           console.error('Error fetching tier:', error);
-          // Default to starter if error or no row
-          setCurrentTierLevel(0);
+          setCurrentTierLevel(0); // Default to starter if error
         } else if (data) {
           // Determine tier level based on flags
           if (data.is_ultra_plus) setCurrentTierLevel(4);
@@ -75,7 +77,7 @@ export const MarketAlphaPricing: React.FC = () => {
           else if (data.is_student) setCurrentTierLevel(1);
           else setCurrentTierLevel(0); // Starter
         } else {
-          setCurrentTierLevel(0); // Default if no record found
+          setCurrentTierLevel(0); // Default if no record found (implicit starter)
         }
       } catch (err) {
         console.error('Unexpected error:', err);
@@ -89,6 +91,13 @@ export const MarketAlphaPricing: React.FC = () => {
   }, [user]);
 
   const handlePlanClick = (index: number) => {
+    if (!user) {
+        // If not logged in, redirect to login or signup (for this demo, maybe just alert or go to signup)
+        // Since the prompt requested the popup logic on "Get System", here we assume standard flow.
+        navigate('/signup'); 
+        return;
+    }
+
     if (index === currentTierLevel) {
       navigate('/market-alpha/dashboard');
     } else if (index > currentTierLevel) {
@@ -125,9 +134,17 @@ export const MarketAlphaPricing: React.FC = () => {
         ) : (
           <div className="grid lg:grid-cols-5 md:grid-cols-2 gap-4">
             {pricingTiers.map((tier, index) => {
-              const isCurrentTier = index === currentTierLevel;
-              const isHigherTier = index > currentTierLevel;
-              const isLowerTier = index < currentTierLevel;
+              // Logic:
+              // If not logged in (currentTierLevel === -1), treat everyone as "Higher Tier" (enabled, Choose Plan).
+              // If logged in:
+              //   Equal -> Current (Continue)
+              //   Greater -> Higher (Choose Plan)
+              //   Less -> Lower (Disabled)
+              
+              const isVisitor = currentTierLevel === -1;
+              const isCurrentTier = !isVisitor && index === currentTierLevel;
+              const isHigherTier = isVisitor || index > currentTierLevel;
+              const isLowerTier = !isVisitor && index < currentTierLevel;
 
               return (
                 <div 
