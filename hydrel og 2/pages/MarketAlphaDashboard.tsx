@@ -86,8 +86,6 @@ export const MarketAlphaDashboard: React.FC = () => {
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>([]);
   const [savedRegions, setSavedRegions] = useState<string[]>([]);
   const [selectedZip, setSelectedZip] = useState('');
-  const [zipSearch, setZipSearch] = useState('');
-  const [isZipDropdownOpen, setIsZipDropdownOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const [processing, setProcessing] = useState(false);
 
@@ -99,12 +97,6 @@ export const MarketAlphaDashboard: React.FC = () => {
   
   // Lock logic
   const hasAnalyzed = usageCount > 0;
-
-  // Filter zips based on search
-  const filteredZips = availableZips.filter(z => 
-    z.zip_code.includes(zipSearch) || 
-    z.city.toLowerCase().includes(zipSearch.toLowerCase())
-  ).slice(0, 100); // Limit results for performance
 
   useEffect(() => {
     if (!user) {
@@ -169,17 +161,21 @@ export const MarketAlphaDashboard: React.FC = () => {
       
       if (regionIds.length === 0) return;
 
-      console.log('Fetching zips for regions:', regionIds);
+      console.log('Fetching all zips for regions:', regionIds);
 
+      // We set a high limit to ensure we get all zips across all selected regions
       const { data, error } = await supabase
         .from('zip_codes')
         .select('zip_code, city, state')
-        .in('region_id', regionIds);
+        .in('region_id', regionIds)
+        .limit(50000); 
         
       if (error) {
         console.error('Error fetching zips:', error);
       } else if (data) {
-        setAvailableZips(data);
+        // Sort zips alphabetically for better dropdown UX
+        const sorted = [...data].sort((a, b) => a.zip_code.localeCompare(b.zip_code));
+        setAvailableZips(sorted);
       }
     };
     fetchZips();
@@ -207,7 +203,6 @@ export const MarketAlphaDashboard: React.FC = () => {
     // Actually, it's better to clear only if the selected zip is in that region, 
     // but for simplicity we'll let the user re-select if needed or handle in useEffect.
     setSelectedZip(''); 
-    setZipSearch('');
   };
 
   const handleSaveRegions = async () => {
@@ -439,47 +434,20 @@ export const MarketAlphaDashboard: React.FC = () => {
 
             {/* Zip Code Selector */}
             {selectedRegionIds.length > 0 && (
-               <div className="bg-white border border-orange-200/80 rounded-2xl p-6 animate-fade-in shadow-sm relative overflow-visible z-30">
+               <div className="bg-white border border-orange-200/80 rounded-2xl p-6 animate-fade-in shadow-sm relative overflow-hidden">
                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-orange-50 rounded-full blur-xl pointer-events-none"></div>
                  <label className="block text-xs text-orange-600 font-bold mb-3 ml-1 uppercase tracking-widest relative z-10">Select Market Zip Code</label>
-                 
-                 <div className="relative z-10">
-                   <input 
-                      type="text"
-                      placeholder="Type zip or city to search..."
-                      value={selectedZip || zipSearch}
-                      onChange={(e) => {
-                        setZipSearch(e.target.value);
-                        setSelectedZip(''); // Reset selection if typing
-                        setIsZipDropdownOpen(true);
-                      }}
-                      onFocus={() => setIsZipDropdownOpen(true)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
-                   />
-                   
-                   {isZipDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl max-h-[300px] overflow-y-auto z-50 animate-fade-in">
-                         {filteredZips.length === 0 ? (
-                            <div className="p-4 text-center text-slate-400 text-sm">No matching zips in selected regions.</div>
-                         ) : (
-                            filteredZips.map(zip => (
-                               <button 
-                                  key={zip.zip_code}
-                                  onClick={() => {
-                                    setSelectedZip(zip.zip_code);
-                                    setZipSearch(`${zip.zip_code} - ${zip.city}, ${zip.state}`);
-                                    setIsZipDropdownOpen(false);
-                                  }}
-                                  className="w-full text-left px-4 py-3 text-sm hover:bg-orange-50 transition-colors border-b border-slate-50 last:border-0 flex justify-between items-center group"
-                               >
-                                  <span className="font-bold text-slate-700 group-hover:text-orange-600">{zip.zip_code}</span>
-                                  <span className="text-xs text-slate-400">{zip.city}, {zip.state}</span>
-                               </button>
-                            ))
-                         )}
-                      </div>
-                   )}
-                 </div>
+                 <select 
+                   value={selectedZip}
+                   onChange={(e) => setSelectedZip(e.target.value)}
+                   className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all appearance-none relative z-10"
+                 >
+                   <option value="">-- Choose Zip Code from Selected Regions --</option>
+                   {availableZips.length === 0 && <option disabled>Loading zip codes...</option>}
+                   {availableZips.map(zip => (
+                     <option key={zip.zip_code} value={zip.zip_code}>{zip.zip_code} - {zip.city}, {zip.state}</option>
+                   ))}
+                 </select>
                </div>
             )}
 
