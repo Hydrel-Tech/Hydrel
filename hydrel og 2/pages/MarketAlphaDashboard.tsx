@@ -228,7 +228,7 @@ export const MarketAlphaDashboard: React.FC = () => {
   const isFormValid = selectedRegionIds.length > 0 && selectedZip && question.length > 0 && !limitReached;
 
   return (
-    <div className="min-h-screen bg-[#f6f9fc] text-slate-900 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-950 via-slate-100 to-white text-slate-900 font-sans">
       {/* --- Header --- */}
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
