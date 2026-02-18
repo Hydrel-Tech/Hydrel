@@ -142,53 +142,72 @@ export const MarketAlphaDashboard: React.FC = () => {
   }, [selectedRegionIds]);
 
   const toggleRegion = (id: string) => {
-    if (selectedRegionIds.includes(id)) {
-      // LOCK CHECK
-      if (hasAnalyzed && savedRegions.includes(id)) {
-        alert("Region locked: You cannot remove regions after performing an analysis. You may add more if your plan permits.");
-        return;
-      }
-      setSelectedRegionIds(selectedRegionIds.filter(rid => rid !== id));
-      setSelectedZip('');
-    } else {
-      if (selectedRegionIds.length < maxRegions) {
-        setSelectedRegionIds([...selectedRegionIds, id]);
+    setSelectedRegionIds(prev => {
+      if (prev.includes(id)) {
+        // LOCK CHECK
+        if (hasAnalyzed && savedRegions.includes(id)) {
+          alert("Region locked: You cannot remove regions after performing an analysis. You may add more if your plan permits.");
+          return prev;
+        }
+        return prev.filter(rid => rid !== id);
       } else {
-        alert(`Plan limit reached: You can only select ${maxRegions} region(s). Upgrade your plan to add more.`);
+        if (prev.length < maxRegions) {
+          return [...prev, id];
+        } else {
+          alert(`Plan limit reached: You can only select ${maxRegions} region(s). Upgrade your plan to add more.`);
+          return prev;
+        }
       }
-    }
+    });
+    // Clear zip if we are removing a region? 
+    // Actually, it's better to clear only if the selected zip is in that region, 
+    // but for simplicity we'll let the user re-select if needed or handle in useEffect.
+    setSelectedZip(''); 
   };
 
   const handleSaveRegions = async () => {
-    if (!user) return;
+    if (!user) {
+      alert("No user session found. Please log in again.");
+      return;
+    }
     setProcessing(true);
 
     try {
-      // Delete existing and insert new
+      console.log('Starting save for user:', user.id, 'Regions:', selectedRegionIds);
+      
+      // 1. Delete existing selections for this user
       const { error: deleteError } = await supabase
         .from('user_selected_regions')
         .delete()
         .eq('user_id', user.id);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('Supabase Delete Error:', deleteError);
+        throw new Error(`Failed to clear existing regions: ${deleteError.message}`);
+      }
 
+      // 2. Insert new selections
       const inserts = selectedRegionIds.map(name => ({
         user_id: user.id,
         region_id: REGION_NAME_TO_ID[name]
-      }));
+      })).filter(item => item.region_id !== undefined);
 
       if (inserts.length > 0) {
         const { error: insertError } = await supabase
           .from('user_selected_regions')
           .insert(inserts);
-        if (insertError) throw insertError;
+        
+        if (insertError) {
+          console.error('Supabase Insert Error:', insertError);
+          throw new Error(`Failed to save new regions: ${insertError.message}`);
+        }
       }
 
-      setSavedRegions(selectedRegionIds);
-      alert("Regions saved successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to save regions.");
+      setSavedRegions([...selectedRegionIds]);
+      alert("Regions saved successfully to your account!");
+    } catch (err: any) {
+      console.error('Detailed Save Error:', err);
+      alert(err.message || "Failed to save regions. Please check your connection and try again.");
     } finally {
       setProcessing(false);
     }
