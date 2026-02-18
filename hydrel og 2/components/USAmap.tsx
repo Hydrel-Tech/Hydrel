@@ -102,6 +102,7 @@ const USAmap: React.FC<USAmapProps> = ({ selectedRegions, savedRegions, maxRegio
           attribution='&copy; OpenStreetMap contributors'
         />
         <GeoJSON
+          key={selectedRegions.join(',') + savedRegions.join(',')}
           data={usStatesData as any}
           style={styleState}
           onEachFeature={onEachState}
