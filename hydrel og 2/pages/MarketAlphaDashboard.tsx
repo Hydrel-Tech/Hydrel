@@ -29,19 +29,49 @@ const SHARED_DROPDOWNS = [
   { id: 'sort', label: 'Sort By', options: ['Relevance', 'Price (Low to High)', 'Price (High to Low)', 'Newest First', 'Days on Market'] }
 ];
 
-// Mapping helper for DB queries (Frontend names -> Backend IDs)
-const REGION_NAME_TO_ID: Record<string, number> = {
-  'northeast': 1,
-  'southeast': 2,
-  'midwest': 3,
-  'west': 4
+// Mapping helper for DB queries (Frontend names -> Backend UUIDs)
+const REGION_NAME_TO_ID: Record<string, string> = {
+  'northeast': "46862884-fe88-44bb-8cc9-c3bad66acf56",
+  'southeast': "1214645d-b54c-4b8c-a23e-a892897b33b9",
+  'midwest': "79f6a45b-a941-4781-a919-7b7c6577d34c",
+  'west': "11c5fe0f-9159-4391-8fcd-8bd655dcfaf2"
 };
 
-const REGION_ID_TO_NAME: Record<number, string> = {
-  1: 'northeast',
-  2: 'southeast',
-  3: 'midwest',
-  4: 'west'
+const REGION_ID_TO_NAME: Record<string, string> = {
+  "46862884-fe88-44bb-8cc9-c3bad66acf56": 'northeast',
+  "1214645d-b54c-4b8c-a23e-a892897b33b9": 'southeast',
+  "79f6a45b-a941-4781-a919-7b7c6577d34c": 'midwest',
+  "11c5fe0f-9159-4391-8fcd-8bd655dcfaf2": 'west'
+};
+
+const REGION_STATES = {
+  northeast: [
+    { abbr: 'CT', name: 'Connecticut' }, { abbr: 'MA', name: 'Massachusetts' }, { abbr: 'ME', name: 'Maine' },
+    { abbr: 'NH', name: 'New Hampshire' }, { abbr: 'NJ', name: 'New Jersey' }, { abbr: 'NY', name: 'New York' },
+    { abbr: 'PA', name: 'Pennsylvania' }, { abbr: 'RI', name: 'Rhode Island' }, { abbr: 'VT', name: 'Vermont' },
+    { abbr: 'DE', name: 'Delaware' }, { abbr: 'MD', name: 'Maryland' }, { abbr: 'DC', name: 'District of Columbia' }
+  ],
+  southeast: [
+    { abbr: 'VA', name: 'Virginia' }, { abbr: 'WV', name: 'West Virginia' }, { abbr: 'NC', name: 'North Carolina' },
+    { abbr: 'SC', name: 'South Carolina' }, { abbr: 'GA', name: 'Georgia' }, { abbr: 'FL', name: 'Florida' },
+    { abbr: 'AL', name: 'Alabama' }, { abbr: 'MS', name: 'Mississippi' }, { abbr: 'TN', name: 'Tennessee' },
+    { abbr: 'KY', name: 'Kentucky' }
+  ],
+  midwest: [
+    { abbr: 'OH', name: 'Ohio' }, { abbr: 'IN', name: 'Indiana' }, { abbr: 'MI', name: 'Michigan' },
+    { abbr: 'IA', name: 'Iowa' }, { abbr: 'MN', name: 'Minnesota' }, { abbr: 'MT', name: 'Montana' },
+    { abbr: 'ND', name: 'North Dakota' }, { abbr: 'SD', name: 'South Dakota' }, { abbr: 'WI', name: 'Wisconsin' },
+    { abbr: 'IL', name: 'Illinois' }, { abbr: 'KS', name: 'Kansas' }, { abbr: 'MO', name: 'Missouri' },
+    { abbr: 'NE', name: 'Nebraska' }
+  ],
+  west: [
+    { abbr: 'AR', name: 'Arkansas' }, { abbr: 'LA', name: 'Louisiana' }, { abbr: 'OK', name: 'Oklahoma' },
+    { abbr: 'TX', name: 'Texas' }, { abbr: 'AZ', name: 'Arizona' }, { abbr: 'CO', name: 'Colorado' },
+    { abbr: 'ID', name: 'Idaho' }, { abbr: 'NM', name: 'New Mexico' }, { abbr: 'NV', name: 'Nevada' },
+    { abbr: 'UT', name: 'Utah' }, { abbr: 'WY', name: 'Wyoming' }, { abbr: 'AK', name: 'Alaska' },
+    { abbr: 'CA', name: 'California' }, { abbr: 'HI', name: 'Hawaii' }, { abbr: 'OR', name: 'Oregon' },
+    { abbr: 'WA', name: 'Washington' }
+  ]
 };
 
 export const MarketAlphaDashboard: React.FC = () => {
@@ -490,12 +520,51 @@ export const MarketAlphaDashboard: React.FC = () => {
           
           <div className="flex-grow relative p-4 md:p-8 overflow-y-auto bg-slate-50 flex flex-col items-center">
              <div className="w-full max-w-6xl flex flex-col gap-6">
-                <USAmap 
-                    selectedRegions={selectedRegionIds}
-                    savedRegions={savedRegions}
-                    maxRegions={maxRegions}
-                    onRegionClick={toggleRegion}
-                />
+                <div className="relative">
+                   <USAmap 
+                      selectedRegions={selectedRegionIds}
+                      savedRegions={savedRegions}
+                      maxRegions={maxRegions}
+                      onRegionClick={toggleRegion}
+                   />
+                   <div className="absolute top-4 right-4 z-20 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-lg border border-slate-700 pointer-events-none">
+                      <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Performance Note</p>
+                      <p className="text-[9px] text-slate-300">Map loads faster after first initialization.</p>
+                   </div>
+                </div>
+
+                {/* State List Section */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-100 pb-2">Regional State Directory</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                      {(Object.keys(REGION_STATES) as Array<keyof typeof REGION_STATES>).map((region) => {
+                         const isSelected = selectedRegionIds.includes(region);
+                         return (
+                            <div key={region} className="space-y-3">
+                               <h4 className={`text-sm font-bold uppercase tracking-wide flex items-center gap-2 ${isSelected ? 'text-blue-600' : 'text-slate-800'}`}>
+                                  <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.6)]' : 'bg-slate-300'}`}></div>
+                                  {region}
+                               </h4>
+                               <div className="flex flex-wrap gap-2">
+                                  {REGION_STATES[region].map((state) => (
+                                     <div 
+                                        key={state.abbr}
+                                        title={state.name}
+                                        className={`px-2 py-1 rounded text-[10px] font-bold transition-all duration-300 border ${
+                                           isSelected 
+                                           ? 'bg-blue-50 border-blue-200 text-blue-700' 
+                                           : 'bg-slate-50 border-slate-100 text-slate-400'
+                                        }`}
+                                     >
+                                        {state.abbr}
+                                     </div>
+                                  ))}
+                               </div>
+                            </div>
+                         );
+                      })}
+                   </div>
+                </div>
 
                 {/* Region Actions */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-4 bg-white rounded-2xl shadow-sm border border-slate-200 px-6">
