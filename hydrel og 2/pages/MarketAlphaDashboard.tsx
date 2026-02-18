@@ -86,6 +86,8 @@ export const MarketAlphaDashboard: React.FC = () => {
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>([]);
   const [savedRegions, setSavedRegions] = useState<string[]>([]);
   const [selectedZip, setSelectedZip] = useState('');
+  const [zipSearch, setZipSearch] = useState('');
+  const [isZipDropdownOpen, setIsZipDropdownOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const [processing, setProcessing] = useState(false);
 
@@ -97,6 +99,12 @@ export const MarketAlphaDashboard: React.FC = () => {
   
   // Lock logic
   const hasAnalyzed = usageCount > 0;
+
+  // Filter zips based on search
+  const filteredZips = availableZips.filter(z => 
+    z.zip_code.includes(zipSearch) || 
+    z.city.toLowerCase().includes(zipSearch.toLowerCase())
+  ).slice(0, 100); // Limit results for performance
 
   useEffect(() => {
     if (!user) {
@@ -154,17 +162,23 @@ export const MarketAlphaDashboard: React.FC = () => {
         return;
       }
       
-      // Convert string region names to numeric IDs for DB query
-      const numericIds = selectedRegionIds.map(name => REGION_NAME_TO_ID[name] || 0).filter(id => id !== 0);
+      // Convert string region names to UUIDs for DB query
+      const regionIds = selectedRegionIds
+        .map(name => REGION_NAME_TO_ID[name])
+        .filter((id): id is string => !!id);
       
-      if (numericIds.length === 0) return;
+      if (regionIds.length === 0) return;
 
-      const { data } = await supabase
+      console.log('Fetching zips for regions:', regionIds);
+
+      const { data, error } = await supabase
         .from('zip_codes')
         .select('zip_code, city, state')
-        .in('region_id', numericIds);
+        .in('region_id', regionIds);
         
-      if (data) {
+      if (error) {
+        console.error('Error fetching zips:', error);
+      } else if (data) {
         setAvailableZips(data);
       }
     };
@@ -193,6 +207,7 @@ export const MarketAlphaDashboard: React.FC = () => {
     // Actually, it's better to clear only if the selected zip is in that region, 
     // but for simplicity we'll let the user re-select if needed or handle in useEffect.
     setSelectedZip(''); 
+    setZipSearch('');
   };
 
   const handleSaveRegions = async () => {
@@ -424,20 +439,47 @@ export const MarketAlphaDashboard: React.FC = () => {
 
             {/* Zip Code Selector */}
             {selectedRegionIds.length > 0 && (
-               <div className="bg-white border border-orange-200/80 rounded-2xl p-6 animate-fade-in shadow-sm relative overflow-hidden">
+               <div className="bg-white border border-orange-200/80 rounded-2xl p-6 animate-fade-in shadow-sm relative overflow-visible z-30">
                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-orange-50 rounded-full blur-xl pointer-events-none"></div>
                  <label className="block text-xs text-orange-600 font-bold mb-3 ml-1 uppercase tracking-widest relative z-10">Select Market Zip Code</label>
-                 <select 
-                   value={selectedZip}
-                   onChange={(e) => setSelectedZip(e.target.value)}
-                   className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all appearance-none relative z-10"
-                 >
-                   <option value="">-- Choose Zip Code from Selected Regions --</option>
-                   {availableZips.length === 0 && <option disabled>Loading zip codes...</option>}
-                   {availableZips.map(zip => (
-                     <option key={zip.zip_code} value={zip.zip_code}>{zip.zip_code} - {zip.city}, {zip.state}</option>
-                   ))}
-                 </select>
+                 
+                 <div className="relative z-10">
+                   <input 
+                      type="text"
+                      placeholder="Type zip or city to search..."
+                      value={selectedZip || zipSearch}
+                      onChange={(e) => {
+                        setZipSearch(e.target.value);
+                        setSelectedZip(''); // Reset selection if typing
+                        setIsZipDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsZipDropdownOpen(true)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
+                   />
+                   
+                   {isZipDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl max-h-[300px] overflow-y-auto z-50 animate-fade-in">
+                         {filteredZips.length === 0 ? (
+                            <div className="p-4 text-center text-slate-400 text-sm">No matching zips in selected regions.</div>
+                         ) : (
+                            filteredZips.map(zip => (
+                               <button 
+                                  key={zip.zip_code}
+                                  onClick={() => {
+                                    setSelectedZip(zip.zip_code);
+                                    setZipSearch(`${zip.zip_code} - ${zip.city}, ${zip.state}`);
+                                    setIsZipDropdownOpen(false);
+                                  }}
+                                  className="w-full text-left px-4 py-3 text-sm hover:bg-orange-50 transition-colors border-b border-slate-50 last:border-0 flex justify-between items-center group"
+                               >
+                                  <span className="font-bold text-slate-700 group-hover:text-orange-600">{zip.zip_code}</span>
+                                  <span className="text-xs text-slate-400">{zip.city}, {zip.state}</span>
+                               </button>
+                            ))
+                         )}
+                      </div>
+                   )}
+                 </div>
                </div>
             )}
 
@@ -510,6 +552,13 @@ export const MarketAlphaDashboard: React.FC = () => {
                </button>
                <h2 className="text-xl font-bold text-slate-900 tracking-wider border-l border-slate-200 pl-4 ml-2">REGIONAL SELECTION</h2>
              </div>
+
+             <div className="hidden lg:flex items-center gap-4 bg-amber-50 px-4 py-2 rounded-full border border-amber-100 animate-pulse">
+                <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <p className="text-[11px] font-bold text-amber-700 uppercase tracking-tight">
+                  Map slow? Go to dashboard and come back – loads faster second time.
+                </p>
+             </div>
              
              <div className="flex items-center gap-4">
                <div className="px-4 py-2 bg-slate-100 rounded-full text-xs font-bold text-slate-500 border border-slate-200">
@@ -527,10 +576,6 @@ export const MarketAlphaDashboard: React.FC = () => {
                       maxRegions={maxRegions}
                       onRegionClick={toggleRegion}
                    />
-                   <div className="absolute top-4 right-4 z-20 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-lg border border-slate-700 pointer-events-none">
-                      <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Performance Note</p>
-                      <p className="text-[9px] text-slate-300">Map loads faster after first initialization.</p>
-                   </div>
                 </div>
 
                 {/* State List Section */}
