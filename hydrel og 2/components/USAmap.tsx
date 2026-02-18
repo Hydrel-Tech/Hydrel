@@ -40,6 +40,7 @@ interface USAmapProps {
 }
 
 const USAmap: React.FC<USAmapProps> = ({ selectedRegions, savedRegions, maxRegions, onRegionClick }) => {
+  const [mapReady, setMapReady] = React.useState(false);
   
   // Function that styles each state
   const styleState = (feature: any) => {
@@ -83,11 +84,18 @@ const USAmap: React.FC<USAmapProps> = ({ selectedRegions, savedRegions, maxRegio
   };
 
   return (
-    <div className="h-[600px] w-full bg-slate-100 rounded-xl overflow-hidden border border-slate-300">
+    <div className="h-[600px] w-full bg-slate-900 rounded-xl overflow-hidden border border-slate-300 relative">
+      {!mapReady && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900 text-white gap-4">
+           <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+           <p className="text-sm font-bold tracking-widest uppercase text-cyan-500">Initializing Map Intelligence...</p>
+        </div>
+      )}
       <MapContainer
         center={[37.8, -96]}   // center of US
         zoom={4}
         style={{ height: '100%', width: '100%' }}
+        whenReady={() => setMapReady(true)}
       >
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
