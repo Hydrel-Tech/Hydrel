@@ -37,6 +37,13 @@ const REGION_NAME_TO_ID: Record<string, number> = {
   'west': 4
 };
 
+const REGION_ID_TO_NAME: Record<number, string> = {
+  1: 'northeast',
+  2: 'southeast',
+  3: 'midwest',
+  4: 'west'
+};
+
 export const MarketAlphaDashboard: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -47,6 +54,7 @@ export const MarketAlphaDashboard: React.FC = () => {
   const [formState, setFormState] = useState<Record<string, string>>({});
   // Selected Region IDs are now strings like 'northeast', 'west' to match Map Component
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>([]);
+  const [savedRegions, setSavedRegions] = useState<string[]>([]);
   const [selectedZip, setSelectedZip] = useState('');
   const [question, setQuestion] = useState('');
   const [processing, setProcessing] = useState(false);
@@ -91,6 +99,18 @@ export const MarketAlphaDashboard: React.FC = () => {
         .gte('created_at', startOfMonth.toISOString());
       
       setUsageCount(count || 0);
+
+      // 3. Fetch Saved Regions
+      const { data: regionData } = await supabase
+        .from('user_selected_regions')
+        .select('region_id')
+        .eq('user_id', user.id);
+      
+      if (regionData) {
+        const names = regionData.map(r => REGION_ID_TO_NAME[r.region_id]).filter(Boolean) as string[];
+        setSavedRegions(names);
+        setSelectedRegionIds(names);
+      }
     };
 
     fetchUserData();
@@ -124,7 +144,7 @@ export const MarketAlphaDashboard: React.FC = () => {
   const toggleRegion = (id: string) => {
     if (selectedRegionIds.includes(id)) {
       // LOCK CHECK
-      if (hasAnalyzed) {
+      if (hasAnalyzed && savedRegions.includes(id)) {
         alert("Region locked: You cannot remove regions after performing an analysis. You may add more if your plan permits.");
         return;
       }
@@ -137,6 +157,45 @@ export const MarketAlphaDashboard: React.FC = () => {
         alert(`Plan limit reached: You can only select ${maxRegions} region(s). Upgrade your plan to add more.`);
       }
     }
+  };
+
+  const handleSaveRegions = async () => {
+    if (!user) return;
+    setProcessing(true);
+
+    try {
+      // Delete existing and insert new
+      const { error: deleteError } = await supabase
+        .from('user_selected_regions')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (deleteError) throw deleteError;
+
+      const inserts = selectedRegionIds.map(name => ({
+        user_id: user.id,
+        region_id: REGION_NAME_TO_ID[name]
+      }));
+
+      if (inserts.length > 0) {
+        const { error: insertError } = await supabase
+          .from('user_selected_regions')
+          .insert(inserts);
+        if (insertError) throw insertError;
+      }
+
+      setSavedRegions(selectedRegionIds);
+      alert("Regions saved successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save regions.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleReset = () => {
+    setSelectedRegionIds(savedRegions);
   };
 
   const handleDropdownChange = (key: string, value: string) => {
@@ -407,23 +466,45 @@ export const MarketAlphaDashboard: React.FC = () => {
                <div className="px-4 py-2 bg-slate-100 rounded-full text-xs font-bold text-slate-500 border border-slate-200">
                   {selectedRegionIds.length} / {maxRegions} Selected
                </div>
-               <button 
-                onClick={() => setIsMapOpen(false)}
-                className="px-6 py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-colors text-sm shadow-lg shadow-emerald-500/20"
-              >
-                CONFIRM SELECTION
-              </button>
              </div>
           </div>
           
-          <div className="flex-grow relative p-8 overflow-hidden bg-slate-50 flex flex-col items-center">
-             <div className="w-full max-w-6xl h-full flex flex-col">
+          <div className="flex-grow relative p-4 md:p-8 overflow-y-auto bg-slate-50 flex flex-col items-center">
+             <div className="w-full max-w-6xl flex flex-col gap-6">
                 <USAmap 
                     selectedRegions={selectedRegionIds}
+                    savedRegions={savedRegions}
                     maxRegions={maxRegions}
                     onRegionClick={toggleRegion}
                 />
-                <div className="mt-6 p-6 bg-white rounded-xl shadow border border-slate-200 text-slate-500 flex items-start gap-4">
+
+                {/* Region Actions */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-4 bg-white rounded-2xl shadow-sm border border-slate-200 px-6">
+                   <div className="flex items-center gap-3 flex-grow sm:flex-grow-0">
+                      <button 
+                        onClick={handleSaveRegions}
+                        disabled={processing || JSON.stringify(selectedRegionIds.sort()) === JSON.stringify(savedRegions.sort())}
+                        className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all text-sm shadow-lg shadow-emerald-500/10 min-w-[140px]"
+                      >
+                        {processing ? 'Saving...' : 'Save Regions'}
+                      </button>
+                      <button 
+                        onClick={handleReset}
+                        className="px-8 py-3 bg-white text-slate-600 border border-slate-200 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm min-w-[140px]"
+                      >
+                        Reset Changes
+                      </button>
+                   </div>
+                   <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
+                   <button 
+                    onClick={() => setIsMapOpen(false)}
+                    className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all text-sm shadow-lg min-w-[140px]"
+                  >
+                    Close Map
+                  </button>
+                </div>
+
+                <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-200 text-slate-500 flex items-start gap-4">
                     <div className="p-2 bg-blue-50 text-blue-500 rounded-lg">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
@@ -433,7 +514,7 @@ export const MarketAlphaDashboard: React.FC = () => {
                             Click any state to toggle its parent region. 
                             {hasAnalyzed 
                             ? <span className="text-orange-600 font-bold ml-1">Note: Existing regions are locked due to prior analysis history. You may only add new regions if your plan allows.</span>
-                            : " You can freely change regions before running your first analysis."
+                            : " You can freely change regions before clicking 'Save Regions'."
                             }
                         </p>
                     </div>
