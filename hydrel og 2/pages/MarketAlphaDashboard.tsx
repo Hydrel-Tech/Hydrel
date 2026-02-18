@@ -31,16 +31,16 @@ const SHARED_DROPDOWNS = [
 
 // Mapping helper for DB queries (Frontend names -> Backend UUIDs)
 const REGION_NAME_TO_ID: Record<string, string> = {
-  'northeast': "46862884-fe88-44bb-8cc9-c3bad66acf56",
-  'southeast': "1214645d-b54c-4b8c-a23e-a892897b33b9",
-  'midwest': "79f6a45b-a941-4781-a919-7b7c6577d34c",
+  'northeast': "468628a4-fe88-44bb-8cc9-c3bad66acf56",
+  'southeast': "1214645d-b54c-4b8c-a23e-a892897d33b9",
+  'midwest': "79f6a45b-a941-4781-a919-7d7c6577d34c",
   'west': "11c5fe0f-9159-4391-8fcd-8bd655dcfaf2"
 };
 
 const REGION_ID_TO_NAME: Record<string, string> = {
-  "46862884-fe88-44bb-8cc9-c3bad66acf56": 'northeast',
-  "1214645d-b54c-4b8c-a23e-a892897b33b9": 'southeast',
-  "79f6a45b-a941-4781-a919-7b7c6577d34c": 'midwest',
+  "468628a4-fe88-44bb-8cc9-c3bad66acf56": 'northeast',
+  "1214645d-b54c-4b8c-a23e-a892897d33b9": 'southeast',
+  "79f6a45b-a941-4781-a919-7d7c6577d34c": 'midwest',
   "11c5fe0f-9159-4391-8fcd-8bd655dcfaf2": 'west'
 };
 
