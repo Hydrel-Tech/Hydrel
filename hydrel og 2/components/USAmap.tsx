@@ -2,7 +2,7 @@
 import React from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import usStatesData from '../gz_2010_us_040_00_5m';
+import usStatesData from '../gz_2010_us_040_00_5m.json';
 
 const stateToRegion: Record<string, string> = {
   // Northeast
@@ -34,47 +34,35 @@ const regionColors: Record<string, string> = {
 
 interface USAmapProps {
   selectedRegions: string[];
+  savedRegions: string[];
   maxRegions: number;
   onRegionClick: (region: string) => void;
 }
 
-const USAmap: React.FC<USAmapProps> = ({ selectedRegions, maxRegions, onRegionClick }) => {
+const USAmap: React.FC<USAmapProps> = ({ selectedRegions, savedRegions, maxRegions, onRegionClick }) => {
   
   // Function that styles each state
   const styleState = (feature: any) => {
-    // Attempt to resolve state code from properties. Adjust 'NAME' or 'STATE' based on actual JSON keys.
-    // The provided file likely uses 'NAME' (e.g. "Texas") or 'STATE' (FIPS/Abbr).
-    // Using a lookup if necessary, but assuming feature.properties.NAME maps to abbreviations or we use the helper logic.
-    // For safety, we'll try to map common identifiers.
-    
     const props = feature.properties;
     let region = '';
     
-    // Direct mapping attempt (if JSON has abbreviations like 'TX')
     if (stateToRegion[props.STATE]) {
        region = stateToRegion[props.STATE];
     } 
-    // If JSON has full names (e.g. "California"), we might need to rely on the passed in logic or mapped snippet
-    // Since the snippet provided assumed stateToRegion[stateCode], we stick to that logic.
-    // We will assume `feature.properties.NAME` might need mapping, or `feature.properties.STATE` is the key.
-    // In many GeoJSONs, STATE is a numeric FIPS code. NAME is the string.
-    // Let's assume the user has a map where the keys match the JSON properties or use a name-to-abbr helper.
     else if (props.NAME) {
        region = getRegionByStateName(props.NAME) || '';
     }
 
     const isSelected = selectedRegions.includes(region);
+    const isSaved = savedRegions.includes(region);
 
     return {
-      fillColor: regionColors[region] || '#eee',
-      weight: 1,
+      fillColor: isSelected ? '#3b82f6' : (regionColors[region] || '#eee'),
+      weight: isSaved ? 2 : 1,
       opacity: 1,
-      color: 'red', // state border color
-      fillOpacity: isSelected ? 0.9 : 0.4, // darker when selected
-      // Overlay blue tint if selected (simulated by mixing or just using high opacity fill)
-      // The snippet requested: ...(isSelected && { fillColor: '#ADD8E6' }) 
-      // We will override fill color if selected to make it distinct as requested in snippet logic
-      ...(isSelected && { fillColor: '#3b82f6', fillOpacity: 0.6 }) 
+      color: isSaved ? '#059669' : 'red', // green border for saved
+      fillOpacity: isSelected ? 0.7 : (isSaved ? 0.5 : 0.3),
+      ...(isSelected && { weight: 2, color: '#2563eb' })
     };
   };
 
