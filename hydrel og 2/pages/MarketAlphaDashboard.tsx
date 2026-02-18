@@ -74,18 +74,31 @@ const REGION_STATES = {
   ]
 };
 
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabaseClient';
+import USAmap from '../components/USAmap';
+
+// ... (Constants and Mappings remain the same)
+
 export const MarketAlphaDashboard: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   // UI State
   const [agentMode, setAgentMode] = useState<AgentMode>('buying');
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [formState, setFormState] = useState<Record<string, string>>({});
-  // Selected Region IDs are now strings like 'northeast', 'west' to match Map Component
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>([]);
   const [savedRegions, setSavedRegions] = useState<string[]>([]);
+  
+  // Searchable Zip States
   const [selectedZip, setSelectedZip] = useState('');
+  const [zipSearch, setZipSearch] = useState('');
+  const [isZipDropdownOpen, setIsZipDropdownOpen] = useState(false);
+  
   const [question, setQuestion] = useState('');
   const [processing, setProcessing] = useState(false);
 
@@ -97,6 +110,23 @@ export const MarketAlphaDashboard: React.FC = () => {
   
   // Lock logic
   const hasAnalyzed = usageCount > 0;
+
+  // Click Outside Listener to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsZipDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filter zips based on search
+  const filteredZips = availableZips.filter(z => 
+    z.zip_code.includes(zipSearch) || 
+    z.city.toLowerCase().includes(zipSearch.toLowerCase())
+  ).slice(0, 100); 
 
   useEffect(() => {
     if (!user) {
@@ -154,16 +184,14 @@ export const MarketAlphaDashboard: React.FC = () => {
         return;
       }
       
-      // Convert string region names to UUIDs for DB query
       const regionIds = selectedRegionIds
         .map(name => REGION_NAME_TO_ID[name])
         .filter((id): id is string => !!id);
       
       if (regionIds.length === 0) return;
 
-      console.log('Fetching all zips for regions:', regionIds);
+      console.log('Fetching up to 50k zips for regions:', regionIds);
 
-      // We set a high limit to ensure we get all zips across all selected regions
       const { data, error } = await supabase
         .from('zip_codes')
         .select('zip_code, city, state')
@@ -173,7 +201,6 @@ export const MarketAlphaDashboard: React.FC = () => {
       if (error) {
         console.error('Error fetching zips:', error);
       } else if (data) {
-        // Sort zips alphabetically for better dropdown UX
         const sorted = [...data].sort((a, b) => a.zip_code.localeCompare(b.zip_code));
         setAvailableZips(sorted);
       }
@@ -184,9 +211,8 @@ export const MarketAlphaDashboard: React.FC = () => {
   const toggleRegion = (id: string) => {
     setSelectedRegionIds(prev => {
       if (prev.includes(id)) {
-        // LOCK CHECK
         if (hasAnalyzed && savedRegions.includes(id)) {
-          alert("Region locked: You cannot remove regions after performing an analysis. You may add more if your plan permits.");
+          alert("Region locked: You cannot remove regions after performing an analysis.");
           return prev;
         }
         return prev.filter(rid => rid !== id);
@@ -194,60 +220,32 @@ export const MarketAlphaDashboard: React.FC = () => {
         if (prev.length < maxRegions) {
           return [...prev, id];
         } else {
-          alert(`Plan limit reached: You can only select ${maxRegions} region(s). Upgrade your plan to add more.`);
+          alert(`Plan limit reached: You can only select ${maxRegions} region(s).`);
           return prev;
         }
       }
     });
-    // Clear zip if we are removing a region? 
-    // Actually, it's better to clear only if the selected zip is in that region, 
-    // but for simplicity we'll let the user re-select if needed or handle in useEffect.
     setSelectedZip(''); 
+    setZipSearch('');
   };
 
   const handleSaveRegions = async () => {
-    if (!user) {
-      alert("No user session found. Please log in again.");
-      return;
-    }
+    if (!user) return;
     setProcessing(true);
-
     try {
-      console.log('Starting save for user:', user.id, 'Regions:', selectedRegionIds);
-      
-      // 1. Delete existing selections for this user
-      const { error: deleteError } = await supabase
-        .from('user_selected_regions')
-        .delete()
-        .eq('user_id', user.id);
-
-      if (deleteError) {
-        console.error('Supabase Delete Error:', deleteError);
-        throw new Error(`Failed to clear existing regions: ${deleteError.message}`);
-      }
-
-      // 2. Insert new selections
+      await supabase.from('user_selected_regions').delete().eq('user_id', user.id);
       const inserts = selectedRegionIds.map(name => ({
         user_id: user.id,
         region_id: REGION_NAME_TO_ID[name]
       })).filter(item => item.region_id !== undefined);
 
       if (inserts.length > 0) {
-        const { error: insertError } = await supabase
-          .from('user_selected_regions')
-          .insert(inserts);
-        
-        if (insertError) {
-          console.error('Supabase Insert Error:', insertError);
-          throw new Error(`Failed to save new regions: ${insertError.message}`);
-        }
+        await supabase.from('user_selected_regions').insert(inserts);
       }
-
       setSavedRegions([...selectedRegionIds]);
-      alert("Regions saved successfully to your account!");
-    } catch (err: any) {
-      console.error('Detailed Save Error:', err);
-      alert(err.message || "Failed to save regions. Please check your connection and try again.");
+      alert("Regions saved successfully!");
+    } catch (err) {
+      alert("Failed to save regions.");
     } finally {
       setProcessing(false);
     }
@@ -255,6 +253,8 @@ export const MarketAlphaDashboard: React.FC = () => {
 
   const handleReset = () => {
     setSelectedRegionIds(savedRegions);
+    setZipSearch('');
+    setSelectedZip('');
   };
 
   const handleDropdownChange = (key: string, value: string) => {
@@ -264,23 +264,15 @@ export const MarketAlphaDashboard: React.FC = () => {
   const handleAnalyze = async () => {
     if (!user || processing) return;
     setProcessing(true);
-
     try {
       const { error } = await supabase
         .from('user_analyses')
         .insert([{ user_id: user.id, question: question, zip_code: selectedZip, mode: agentMode }]);
-
       if (!error) {
         setUsageCount(prev => prev + 1);
-        alert("Analysis request sent to core engine.");
-      } else {
-        alert("Error recording analysis.");
+        alert("Analysis request sent.");
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setProcessing(false);
-    }
+    } catch (e) { console.error(e); } finally { setProcessing(false); }
   };
 
   const limitReached = usageCount >= monthlyLimit;
@@ -288,7 +280,6 @@ export const MarketAlphaDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-950 via-slate-100 to-white text-slate-900 font-sans">
-      {/* --- Header --- */}
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -322,21 +313,14 @@ export const MarketAlphaDashboard: React.FC = () => {
         </div>
       </header>
 
-      {/* --- Main Content --- */}
       <div className="max-w-[1600px] mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-[400px_1fr] gap-8">
-          
-          {/* --- Left Column: Controls (Blue/Cyan Theme) --- */}
           <div className="space-y-8">
-            
-            {/* Agent Toggles */}
             <div className="flex flex-col gap-3">
               <button 
                 onClick={() => setAgentMode('listing')}
                 className={`p-6 rounded-2xl border-l-4 text-left transition-all duration-300 relative overflow-hidden group shadow-sm hover:shadow-md ${
-                  agentMode === 'listing' 
-                    ? 'bg-white border-l-blue-500 border-y border-r border-blue-100 ring-1 ring-blue-100' 
-                    : 'bg-white border-l-slate-200 border-y border-r border-slate-200 hover:border-l-blue-300'
+                  agentMode === 'listing' ? 'bg-white border-l-blue-500 border-blue-100 ring-1 ring-blue-100' : 'bg-white border-l-slate-200 border-slate-200'
                 }`}
               >
                 <h3 className={`text-xl font-bold mb-1 ${agentMode === 'listing' ? 'text-blue-900' : 'text-slate-500'}`}>LISTING AGENT</h3>
@@ -346,9 +330,7 @@ export const MarketAlphaDashboard: React.FC = () => {
               <button 
                 onClick={() => setAgentMode('buying')}
                 className={`p-6 rounded-2xl border-l-4 text-left transition-all duration-300 relative overflow-hidden group shadow-sm hover:shadow-md ${
-                  agentMode === 'buying' 
-                    ? 'bg-white border-l-cyan-500 border-y border-r border-cyan-100 ring-1 ring-cyan-100' 
-                    : 'bg-white border-l-slate-200 border-y border-r border-slate-200 hover:border-l-cyan-300'
+                  agentMode === 'buying' ? 'bg-white border-l-cyan-500 border-cyan-100 ring-1 ring-cyan-100' : 'bg-white border-l-slate-200 border-slate-200'
                 }`}
               >
                 <h3 className={`text-xl font-bold mb-1 ${agentMode === 'buying' ? 'text-cyan-900' : 'text-slate-500'}`}>BUYING AGENT</h3>
@@ -356,19 +338,15 @@ export const MarketAlphaDashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* Dynamic Dropdowns */}
             <div className="bg-white border border-blue-200/60 rounded-2xl p-6 space-y-5 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-bl-full -mr-10 -mt-10 pointer-events-none"></div>
-
               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 relative z-10">
                 {agentMode === 'buying' ? 'Acquisition Parameters' : 'Disposition Parameters'}
               </h4>
-              
               {(agentMode === 'buying' ? BUYER_DROPDOWNS : LISTING_DROPDOWNS).map((field) => (
                 <div key={field.id} className="relative z-10">
                   <label className="block text-xs text-slate-500 font-bold mb-2 ml-1">{field.label}</label>
                   <select 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-blue-500 transition-all appearance-none"
                     value={formState[`${agentMode}_${field.id}`] || ''}
                     onChange={(e) => handleDropdownChange(field.id, e.target.value)}
                   >
@@ -380,23 +358,21 @@ export const MarketAlphaDashboard: React.FC = () => {
             </div>
             
             <div className="bg-white border border-blue-200/60 rounded-2xl p-6 space-y-5 shadow-sm relative">
-               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">
-                Property Filters
-              </h4>
+               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Property Filters</h4>
                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-slate-500 font-bold mb-2 ml-1">Min SqFt</label>
-                    <input type="number" placeholder="0" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-3 text-sm text-slate-700 focus:border-blue-500 focus:outline-none" />
+                    <input type="number" placeholder="0" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-3 text-sm text-slate-700" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 font-bold mb-2 ml-1">Max SqFt</label>
-                    <input type="number" placeholder="Max" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-3 text-sm text-slate-700 focus:border-blue-500 focus:outline-none" />
+                    <input type="number" placeholder="Max" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-3 text-sm text-slate-700" />
                   </div>
                </div>
                {SHARED_DROPDOWNS.map((field) => (
                 <div key={field.id}>
                   <label className="block text-xs text-slate-500 font-bold mb-2 ml-1">{field.label}</label>
-                  <select className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-blue-500 transition-all appearance-none">
+                  <select className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 appearance-none">
                      <option value="">Select option...</option>
                     {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
@@ -405,89 +381,90 @@ export const MarketAlphaDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* --- Right Column: Map & Analysis (Orange Theme) --- */}
           <div className="flex flex-col gap-6">
-            
-            {/* Region Selector */}
-            <div 
-              onClick={() => setIsMapOpen(true)}
-              className="bg-white border border-orange-200/80 rounded-2xl p-8 cursor-pointer hover:border-orange-400 hover:bg-orange-50/20 transition-all group relative overflow-hidden shadow-sm"
-            >
+            <div onClick={() => setIsMapOpen(true)} className="bg-white border border-orange-200/80 rounded-2xl p-8 cursor-pointer hover:border-orange-400 transition-all group relative overflow-hidden shadow-sm">
               <div className="absolute top-0 left-0 w-2 h-full bg-orange-100 group-hover:bg-orange-400 transition-colors"></div>
-              
               <div className="flex items-center justify-between relative z-10 pl-4">
                 <div>
                    <h3 className="text-2xl font-bold text-slate-800 mb-2 group-hover:text-orange-600 transition-colors">
                     {selectedRegionIds.length === 0 ? 'Select Target Region' : `${selectedRegionIds.length} Region${selectedRegionIds.length !== 1 ? 's' : ''} Selected`}
                   </h3>
                    <p className="text-slate-500 text-sm">
-                    {selectedRegionIds.length === 0 
-                      ? 'Click to open geographical intelligence map' 
-                      : `Analysis Scope: [${selectedRegionIds.join(', ')}]`}
+                    {selectedRegionIds.length === 0 ? 'Click to open geographical intelligence map' : `Analysis Scope: [${selectedRegionIds.join(', ')}]`}
                   </p>
                 </div>
-                <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-400 group-hover:bg-orange-100 group-hover:text-orange-600 transition-all group-hover:scale-110">
+                <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-all">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 7m0 13V7m0 0L9 7" /></svg>
                 </div>
               </div>
             </div>
 
-            {/* Zip Code Selector */}
             {selectedRegionIds.length > 0 && (
-               <div className="bg-white border border-orange-200/80 rounded-2xl p-6 animate-fade-in shadow-sm relative overflow-hidden">
-                 <div className="absolute -top-10 -right-10 w-24 h-24 bg-orange-50 rounded-full blur-xl pointer-events-none"></div>
+               <div ref={dropdownRef} className="bg-white border border-orange-200/80 rounded-2xl p-6 animate-fade-in shadow-sm relative overflow-visible z-30">
                  <label className="block text-xs text-orange-600 font-bold mb-3 ml-1 uppercase tracking-widest relative z-10">Select Market Zip Code</label>
-                 <select 
-                   value={selectedZip}
-                   onChange={(e) => setSelectedZip(e.target.value)}
-                   className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all appearance-none relative z-10"
-                 >
-                   <option value="">-- Choose Zip Code from Selected Regions --</option>
-                   {availableZips.length === 0 && <option disabled>Loading zip codes...</option>}
-                   {availableZips.map(zip => (
-                     <option key={zip.zip_code} value={zip.zip_code}>{zip.zip_code} - {zip.city}, {zip.state}</option>
-                   ))}
-                 </select>
+                 <div className="relative z-10">
+                   <input 
+                      type="text"
+                      placeholder="Type zip or city to search..."
+                      value={selectedZip || zipSearch}
+                      onChange={(e) => {
+                        setZipSearch(e.target.value);
+                        setSelectedZip('');
+                        setIsZipDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsZipDropdownOpen(true)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 focus:border-orange-500 focus:outline-none transition-all"
+                   />
+                   {isZipDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl max-h-[300px] overflow-y-auto z-50 animate-fade-in">
+                         {filteredZips.length === 0 ? (
+                            <div className="p-4 text-center text-slate-400 text-sm">No matching zips.</div>
+                         ) : (
+                            filteredZips.map(zip => (
+                               <button 
+                                  key={zip.zip_code}
+                                  onClick={() => {
+                                    setSelectedZip(zip.zip_code);
+                                    setZipSearch(`${zip.zip_code} - ${zip.city}, ${zip.state}`);
+                                    setIsZipDropdownOpen(false);
+                                  }}
+                                  className="w-full text-left px-4 py-3 text-sm hover:bg-orange-50 transition-colors border-b border-slate-50 last:border-0 flex justify-between items-center group"
+                               >
+                                  <span className="font-bold text-slate-700 group-hover:text-orange-600">{zip.zip_code}</span>
+                                  <span className="text-xs text-slate-400">{zip.city}, {zip.state}</span>
+                               </button>
+                            ))
+                         )}
+                      </div>
+                   )}
+                 </div>
                </div>
             )}
 
-            {/* Question Input & Analyze Button */}
             <div className="bg-white border border-orange-200/80 rounded-2xl p-6 flex-grow flex flex-col shadow-sm relative overflow-hidden">
-              <div className="absolute bottom-0 right-0 w-32 h-32 bg-orange-50/50 rounded-tl-full pointer-events-none"></div>
-              
               <div className="flex justify-between items-center mb-4 relative z-10">
                  <label className="block text-xs text-slate-400 font-bold uppercase tracking-widest">Analysis Directive</label>
                  <span className={`text-[10px] uppercase font-bold ${limitReached ? 'text-red-500' : 'text-orange-500'}`}>
-                    {limitReached ? 'Monthly Limit Reached' : `${usageCount} / ${monthlyLimit} Analyses Used`}
+                    {limitReached ? 'Limit Reached' : `${usageCount} / ${monthlyLimit} Used`}
                  </span>
               </div>
-              
               <textarea 
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder="E.g., Compare this property to market trends, analyze investment potential vs local cap rates..."
-                className="w-full flex-grow min-h-[150px] bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all resize-none mb-6 relative z-10"
+                placeholder="E.g., Compare this property to market trends..."
+                className="w-full flex-grow min-h-[150px] bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-800 focus:border-orange-500 focus:outline-none transition-all resize-none mb-6 relative z-10"
               />
-
               <button 
                 onClick={handleAnalyze}
                 disabled={!isFormValid || processing}
                 className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg transition-all relative z-10 ${
-                  isFormValid 
-                    ? 'bg-orange-500 text-white hover:bg-orange-600 hover:scale-[1.01] hover:shadow-orange-500/30' 
-                    : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                  isFormValid ? 'bg-orange-500 text-white hover:bg-orange-600' : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                 }`}
               >
-                {limitReached 
-                  ? 'Limit Reached - Upgrade Plan' 
-                  : processing 
-                    ? 'Processing...' 
-                    : 'Generate Intelligence Report'
-                }
+                {limitReached ? 'Upgrade Plan' : processing ? 'Processing...' : 'Generate Intelligence Report'}
               </button>
             </div>
 
-            {/* Placeholder Report Area */}
             <div className="border border-slate-200 rounded-2xl p-8 bg-white/50">
                <div className="flex items-center gap-2 mb-6 opacity-40">
                   <div className="w-2 h-2 rounded-full bg-slate-400"></div>
@@ -496,57 +473,30 @@ export const MarketAlphaDashboard: React.FC = () => {
                <div className="space-y-4 opacity-10">
                   <div className="h-4 bg-slate-900 rounded w-3/4"></div>
                   <div className="h-4 bg-slate-900 rounded w-1/2"></div>
-                  <div className="h-4 bg-slate-900 rounded w-full"></div>
                </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* --- Map Modal --- */}
       {isMapOpen && (
         <div className="fixed inset-0 z-[100] bg-[#f6f9fc] flex flex-col animate-fade-in">
           <div className="h-20 border-b border-slate-200 flex items-center justify-between px-8 bg-white shadow-sm">
              <div className="flex items-center gap-4">
-               {/* Back Button */}
-               <button 
-                 onClick={() => setIsMapOpen(false)}
-                 className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors"
-               >
-                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                 </svg>
+               <button onClick={() => setIsMapOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">
+                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                  <span className="text-sm font-bold">Back to Dashboard</span>
                </button>
-               <h2 className="text-xl font-bold text-slate-900 tracking-wider border-l border-slate-200 pl-4 ml-2">REGIONAL SELECTION</h2>
+               <h2 className="text-xl font-bold text-slate-900 tracking-wider border-l border-slate-200 pl-4 ml-2 uppercase">REGIONAL SELECTION</h2>
              </div>
-
-             <div className="hidden lg:flex items-center gap-4 bg-amber-50 px-4 py-2 rounded-full border border-amber-100 animate-pulse">
-                <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <p className="text-[11px] font-bold text-amber-700 uppercase tracking-tight">
-                  Map slow? Go to dashboard and come back – loads faster second time.
-                </p>
+             <div className="hidden lg:flex items-center gap-4 bg-amber-50 px-4 py-2 rounded-full border border-amber-100">
+                <p className="text-[11px] font-bold text-amber-700 uppercase tracking-tight">Map slow? Go to dashboard and come back – loads faster second time.</p>
              </div>
-             
-             <div className="flex items-center gap-4">
-               <div className="px-4 py-2 bg-slate-100 rounded-full text-xs font-bold text-slate-500 border border-slate-200">
-                  {selectedRegionIds.length} / {maxRegions} Selected
-               </div>
-             </div>
+             <div className="px-4 py-2 bg-slate-100 rounded-full text-xs font-bold text-slate-500 border border-slate-200">{selectedRegionIds.length} / {maxRegions} Selected</div>
           </div>
-          
           <div className="flex-grow relative p-4 md:p-8 overflow-y-auto bg-slate-50 flex flex-col items-center">
              <div className="w-full max-w-6xl flex flex-col gap-6">
-                <div className="relative">
-                   <USAmap 
-                      selectedRegions={selectedRegionIds}
-                      savedRegions={savedRegions}
-                      maxRegions={maxRegions}
-                      onRegionClick={toggleRegion}
-                   />
-                </div>
-
-                {/* State List Section */}
+                <USAmap selectedRegions={selectedRegionIds} savedRegions={savedRegions} maxRegions={maxRegions} onRegionClick={toggleRegion} />
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-100 pb-2">Regional State Directory</h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -560,17 +510,7 @@ export const MarketAlphaDashboard: React.FC = () => {
                                </h4>
                                <div className="flex flex-wrap gap-2">
                                   {REGION_STATES[region].map((state) => (
-                                     <div 
-                                        key={state.abbr}
-                                        title={state.name}
-                                        className={`px-2 py-1 rounded text-[10px] font-bold transition-all duration-300 border ${
-                                           isSelected 
-                                           ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                                           : 'bg-slate-50 border-slate-100 text-slate-400'
-                                        }`}
-                                     >
-                                        {state.abbr}
-                                     </div>
+                                     <div key={state.abbr} className={`px-2 py-1 rounded text-[10px] font-bold border ${isSelected ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>{state.abbr}</div>
                                   ))}
                                </div>
                             </div>
@@ -578,47 +518,10 @@ export const MarketAlphaDashboard: React.FC = () => {
                       })}
                    </div>
                 </div>
-
-                {/* Region Actions */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-4 bg-white rounded-2xl shadow-sm border border-slate-200 px-6">
-                   <div className="flex items-center gap-3 flex-grow sm:flex-grow-0">
-                      <button 
-                        onClick={handleSaveRegions}
-                        disabled={processing || JSON.stringify(selectedRegionIds.sort()) === JSON.stringify(savedRegions.sort())}
-                        className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all text-sm shadow-lg shadow-emerald-500/10 min-w-[140px]"
-                      >
-                        {processing ? 'Saving...' : 'Save Regions'}
-                      </button>
-                      <button 
-                        onClick={handleReset}
-                        className="px-8 py-3 bg-white text-slate-600 border border-slate-200 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm min-w-[140px]"
-                      >
-                        Reset Changes
-                      </button>
-                   </div>
-                   <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
-                   <button 
-                    onClick={() => setIsMapOpen(false)}
-                    className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all text-sm shadow-lg min-w-[140px]"
-                  >
-                    Close Map
-                  </button>
-                </div>
-
-                <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-200 text-slate-500 flex items-start gap-4">
-                    <div className="p-2 bg-blue-50 text-blue-500 rounded-lg">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    </div>
-                    <div>
-                        <p className="font-bold text-slate-800 mb-1">Selection Guidance</p>
-                        <p className="text-sm leading-relaxed">
-                            Click any state to toggle its parent region. 
-                            {hasAnalyzed 
-                            ? <span className="text-orange-600 font-bold ml-1">Note: Existing regions are locked due to prior analysis history. You may only add new regions if your plan allows.</span>
-                            : " You can freely change regions before clicking 'Save Regions'."
-                            }
-                        </p>
-                    </div>
+                   <button onClick={handleSaveRegions} disabled={processing} className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 disabled:bg-slate-300 transition-all text-sm min-w-[140px]">Save Regions</button>
+                   <button onClick={handleReset} className="px-8 py-3 bg-white text-slate-600 border border-slate-200 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm min-w-[140px]">Reset Changes</button>
+                   <button onClick={() => setIsMapOpen(false)} className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all text-sm min-w-[140px]">Close Map</button>
                 </div>
              </div>
           </div>
