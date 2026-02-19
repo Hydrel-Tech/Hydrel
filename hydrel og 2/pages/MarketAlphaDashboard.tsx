@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Select from 'react-select';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import USAmap from '../components/USAmap';
@@ -97,6 +98,12 @@ export const MarketAlphaDashboard: React.FC = () => {
   
   // Lock logic
   const hasAnalyzed = usageCount > 0;
+
+  // Create options for react-select
+  const zipOptions = availableZips.map(zip => ({
+    value: zip.zip_code,
+    label: `${zip.zip_code} - ${zip.city}, ${zip.state}`
+  }));
 
   useEffect(() => {
     if (!user) {
@@ -263,6 +270,13 @@ export const MarketAlphaDashboard: React.FC = () => {
 
   const handleAnalyze = async () => {
     if (!user || processing) return;
+
+    // Validate valid zip selection
+    if (!availableZips.some(z => z.zip_code === selectedZip)) {
+      alert('Please select a valid zip code from the list.');
+      return;
+    }
+
     setProcessing(true);
 
     try {
@@ -443,23 +457,38 @@ export const MarketAlphaDashboard: React.FC = () => {
 
             {/* Zip Code Selector */}
             {selectedRegionIds.length > 0 && (
-               <div className="bg-indigo-50/80 border border-orange-200/80 rounded-2xl p-6 animate-fade-in shadow-sm relative overflow-hidden">
+               <div className="bg-indigo-50/80 border border-orange-200/80 rounded-2xl p-6 animate-fade-in shadow-sm relative overflow-visible z-30">
                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-orange-50 rounded-full blur-xl pointer-events-none"></div>
                  <label className="block text-xs text-orange-600 font-bold mb-3 ml-1 uppercase tracking-widest relative z-10">Select Market Zip Code</label>
-                 <input
-                   list="zipOptions"
-                   value={selectedZip}
-                   onChange={(e) => setSelectedZip(e.target.value)}
-                   placeholder="Type or select zip code..."
-                   className="w-full bg-purple-50/60 border border-indigo-200/50 rounded-lg px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all relative z-10"
+                 <Select
+                   options={zipOptions}
+                   value={zipOptions.find(opt => opt.value === selectedZip) || null}
+                   onChange={(opt) => setSelectedZip(opt?.value || '')}
+                   placeholder="Search or select a zip code..."
+                   isClearable
+                   noOptionsMessage={() => "No matching zip codes"}
+                   className="w-full relative z-20"
+                   classNamePrefix="react-select"
+                   styles={{
+                     control: (base) => ({ 
+                       ...base, 
+                       backgroundColor: '#f8fafc', 
+                       borderColor: '#e2e8f0',
+                       minHeight: '44px',
+                       boxShadow: 'none',
+                       '&:hover': { borderColor: '#f97316' }
+                     }),
+                     menu: (base) => ({ ...base, zIndex: 50 }),
+                     option: (base, { isFocused, isSelected }) => ({
+                       ...base,
+                       backgroundColor: isSelected ? '#f97316' : isFocused ? '#fed7aa' : 'white',
+                       color: isSelected ? 'white' : 'black',
+                     })
+                   }}
                  />
-                 <datalist id="zipOptions">
-                   {availableZips.map(zip => (
-                     <option key={zip.zip_code} value={zip.zip_code}>
-                       {zip.zip_code} - {zip.city}, {zip.state}
-                     </option>
-                   ))}
-                 </datalist>
+                 {availableZips.length === 0 && (
+                   <p className="text-xs text-slate-400 mt-2 relative z-10">Loading zip codes...</p>
+                 )}
                </div>
             )}
 
