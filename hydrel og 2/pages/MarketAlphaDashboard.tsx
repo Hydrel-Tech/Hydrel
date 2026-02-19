@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Select from 'react-select';
+import AsyncSelect from 'react-select/async';
+import { FixedSizeList as List } from 'react-window';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import USAmap from '../components/USAmap';
@@ -75,6 +76,39 @@ const REGION_STATES = {
   ]
 };
 
+const ITEM_HEIGHT = 35;
+const MAX_MENU_HEIGHT = 300;
+
+const VirtualizedMenuList = (props: any) => {
+  const { options, children, maxHeight, getValue } = props;
+  const childrenArray = React.Children.toArray(children);
+  
+  const [selectedValue] = getValue();
+  const initialOffset = selectedValue
+    ? options.indexOf(selectedValue) * ITEM_HEIGHT
+    : 0;
+  
+  const height = Math.min(maxHeight || MAX_MENU_HEIGHT, childrenArray.length * ITEM_HEIGHT);
+
+  if (childrenArray.length === 0) {
+    return <div className="p-4 text-center text-slate-500 text-sm">No matching zip codes</div>;
+  }
+
+  return (
+    <List
+      height={height}
+      itemCount={childrenArray.length}
+      itemSize={ITEM_HEIGHT}
+      initialScrollOffset={initialOffset}
+      width="100%"
+    >
+      {({ index, style }) => (
+        <div style={style}>{childrenArray[index]}</div>
+      )}
+    </List>
+  );
+};
+
 export const MarketAlphaDashboard: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -86,7 +120,10 @@ export const MarketAlphaDashboard: React.FC = () => {
   // Selected Region IDs are now strings like 'northeast', 'west' to match Map Component
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>([]);
   const [savedRegions, setSavedRegions] = useState<string[]>([]);
-  const [selectedZip, setSelectedZip] = useState('');
+  
+  // Selected Zip is now an object for AsyncSelect
+  const [selectedZip, setSelectedZip] = useState<{value: string, label: string} | null>(null);
+  
   const [question, setQuestion] = useState('');
   const [processing, setProcessing] = useState(false);
 
@@ -94,16 +131,56 @@ export const MarketAlphaDashboard: React.FC = () => {
   const [maxRegions, setMaxRegions] = useState(1);
   const [monthlyLimit, setMonthlyLimit] = useState(0);
   const [usageCount, setUsageCount] = useState(0);
-  const [availableZips, setAvailableZips] = useState<{zip_code: string, city: string, state: string}[]>([]);
   
   // Lock logic
   const hasAnalyzed = usageCount > 0;
 
-  // Create options for react-select
-  const zipOptions = availableZips.map(zip => ({
-    value: zip.zip_code,
-    label: `${zip.zip_code} - ${zip.city}, ${zip.state}`
-  }));
+  // Simple debounce utility
+  const debounce = (fn: Function, delay: number) => {
+    let timer: NodeJS.Timeout;
+    return (...args: any[]) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  };
+
+  const loadZipOptions = async (inputValue: string) => {
+    // If no input, don't fetch anything (or you could fetch a default set)
+    if (!inputValue || inputValue.length < 2) return [];
+
+    // Get region UUIDs from currently selected region names
+    const regionIds = selectedRegionIds
+      .map(name => REGION_NAME_TO_ID[name])
+      .filter((id): id is string => !!id);
+
+    if (regionIds.length === 0) return [];
+
+    // Query Supabase with ILIKE on zip_code
+    const { data, error } = await supabase
+      .from('zip_codes')
+      .select('zip_code, city, state')
+      .in('region_id', regionIds)
+      .ilike('zip_code', `${inputValue}%`)  // matches zip codes starting with input
+      .limit(100);  // only fetch at most 100 suggestions
+
+    if (error) {
+      console.error('Async fetch error:', error);
+      return [];
+    }
+
+    if (!data) return [];
+
+    // Map to the format react-select expects
+    return data.map(zip => ({
+      value: zip.zip_code,
+      label: `${zip.zip_code} - ${zip.city}, ${zip.state}`
+    }));
+  };
+
+  // Debounced load function
+  const debouncedLoadOptions = debounce((inputValue: string, callback: (options: any[]) => void) => {
+    loadZipOptions(inputValue).then(callback);
+  }, 300);
 
   useEffect(() => {
     if (!user) {
@@ -153,41 +230,6 @@ export const MarketAlphaDashboard: React.FC = () => {
     fetchUserData();
   }, [user, navigate]);
 
-  // Fetch Zips when regions change
-  useEffect(() => {
-    const fetchZips = async () => {
-      if (selectedRegionIds.length === 0) {
-        setAvailableZips([]);
-        return;
-      }
-      
-      // Convert string region names to UUIDs for DB query
-      const regionIds = selectedRegionIds
-        .map(name => REGION_NAME_TO_ID[name])
-        .filter((id): id is string => !!id);
-      
-      if (regionIds.length === 0) return;
-
-      console.log('Fetching all zips for regions:', regionIds);
-
-      // We set a high limit to ensure we get all zips across all selected regions
-      const { data, error } = await supabase
-        .from('zip_codes')
-        .select('zip_code, city, state')
-        .in('region_id', regionIds)
-        .limit(50000); 
-        
-      if (error) {
-        console.error('Error fetching zips:', error);
-      } else if (data) {
-        // Sort zips alphabetically for better dropdown UX
-        const sorted = [...data].sort((a, b) => a.zip_code.localeCompare(b.zip_code));
-        setAvailableZips(sorted);
-      }
-    };
-    fetchZips();
-  }, [selectedRegionIds]);
-
   const toggleRegion = (id: string) => {
     setSelectedRegionIds(prev => {
       if (prev.includes(id)) {
@@ -207,9 +249,7 @@ export const MarketAlphaDashboard: React.FC = () => {
       }
     });
     // Clear zip if we are removing a region? 
-    // Actually, it's better to clear only if the selected zip is in that region, 
-    // but for simplicity we'll let the user re-select if needed or handle in useEffect.
-    setSelectedZip(''); 
+    setSelectedZip(null); 
   };
 
   const handleSaveRegions = async () => {
@@ -272,7 +312,7 @@ export const MarketAlphaDashboard: React.FC = () => {
     if (!user || processing) return;
 
     // Validate valid zip selection
-    if (!availableZips.some(z => z.zip_code === selectedZip)) {
+    if (!selectedZip || !selectedZip.value) {
       alert('Please select a valid zip code from the list.');
       return;
     }
@@ -282,7 +322,7 @@ export const MarketAlphaDashboard: React.FC = () => {
     try {
       const { error } = await supabase
         .from('user_analyses')
-        .insert([{ user_id: user.id, question: question, zip_code: selectedZip, mode: agentMode }]);
+        .insert([{ user_id: user.id, question: question, zip_code: selectedZip.value, mode: agentMode }]);
 
       if (!error) {
         setUsageCount(prev => prev + 1);
@@ -298,7 +338,7 @@ export const MarketAlphaDashboard: React.FC = () => {
   };
 
   const limitReached = usageCount >= monthlyLimit;
-  const isFormValid = selectedRegionIds.length > 0 && selectedZip && question.length > 0 && !limitReached;
+  const isFormValid = selectedRegionIds.length > 0 && selectedZip?.value && question.length > 0 && !limitReached;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900/30 to-amber-100/20 text-slate-900 font-sans">
@@ -460,35 +500,39 @@ export const MarketAlphaDashboard: React.FC = () => {
                <div className="bg-indigo-50/80 border border-orange-200/80 rounded-2xl p-6 animate-fade-in shadow-sm relative overflow-visible z-30">
                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-orange-50 rounded-full blur-xl pointer-events-none"></div>
                  <label className="block text-xs text-orange-600 font-bold mb-3 ml-1 uppercase tracking-widest relative z-10">Select Market Zip Code</label>
-                 <Select
-                   options={zipOptions}
-                   value={zipOptions.find(opt => opt.value === selectedZip) || null}
-                   onChange={(opt) => setSelectedZip(opt?.value || '')}
-                   placeholder="Search or select a zip code..."
-                   isClearable
-                   noOptionsMessage={() => "No matching zip codes"}
-                   className="w-full relative z-20"
-                   classNamePrefix="react-select"
-                   styles={{
-                     control: (base) => ({ 
-                       ...base, 
-                       backgroundColor: '#f8fafc', 
-                       borderColor: '#e2e8f0',
-                       minHeight: '44px',
-                       boxShadow: 'none',
-                       '&:hover': { borderColor: '#f97316' }
-                     }),
-                     menu: (base) => ({ ...base, zIndex: 50 }),
-                     option: (base, { isFocused, isSelected }) => ({
-                       ...base,
-                       backgroundColor: isSelected ? '#f97316' : isFocused ? '#fed7aa' : 'white',
-                       color: isSelected ? 'white' : 'black',
-                     })
-                   }}
+                 <AsyncSelect
+                    cacheOptions
+                    loadOptions={debouncedLoadOptions}
+                    defaultOptions={false}
+                    value={selectedZip}
+                    onChange={(opt) => setSelectedZip(opt)}
+                    placeholder="Type at least 2 digits to search..."
+                    isClearable
+                    noOptionsMessage={({ inputValue }) =>
+                      !inputValue || inputValue.length < 2
+                        ? "Type at least 2 digits"
+                        : "No matching zip codes"
+                    }
+                    className="w-full relative z-20"
+                    classNamePrefix="react-select"
+                    components={{ MenuList: VirtualizedMenuList }}
+                    styles={{
+                      control: (base) => ({ 
+                        ...base, 
+                        backgroundColor: '#f8fafc', 
+                        borderColor: '#e2e8f0',
+                        minHeight: '44px',
+                        boxShadow: 'none',
+                        '&:hover': { borderColor: '#f97316' }
+                      }),
+                      menu: (base) => ({ ...base, zIndex: 50 }),
+                      option: (base, { isFocused, isSelected }) => ({
+                        ...base,
+                        backgroundColor: isSelected ? '#f97316' : isFocused ? '#fed7aa' : 'white',
+                        color: isSelected ? 'white' : 'black',
+                      })
+                    }}
                  />
-                 {availableZips.length === 0 && (
-                   <p className="text-xs text-slate-400 mt-2 relative z-10">Loading zip codes...</p>
-                 )}
                </div>
             )}
 
