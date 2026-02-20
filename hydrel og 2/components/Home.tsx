@@ -10,7 +10,7 @@ export const Home: React.FC = () => {
   return (
     <div 
       className="bg-cover bg-center bg-fixed"
-      style={{ backgroundImage: 'url("/images/hero-bg.webp")' }}
+      style={{ backgroundImage: 'url("/images/dashboard-bg.webp")' }}
     >
       <section id="hero">
         <Hero />
