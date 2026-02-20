@@ -23,7 +23,7 @@ export const ArchitecturesGrid: React.FC = () => {
           <h3 className="text-4xl font-bold text-slate-900 max-w-2xl">
             Modular intelligence systems designed for deep vertical execution.
           </h3>
-          <p className="text-xl text-slate-500 max-w-sm [-webkit-text-stroke:1px_black]">
+          <p className="text-xl text-white max-w-sm [-webkit-text-stroke:1px_black]">
             Each architecture operates as a standalone pipeline or integrates into a unified infrastructure.
           </p>
         </div>
