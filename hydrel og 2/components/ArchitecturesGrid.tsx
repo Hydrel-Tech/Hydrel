@@ -18,12 +18,12 @@ export const ArchitecturesGrid: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-6">
       <div className="mb-16">
-        <h2 className="text-sm font-bold text-indigo-600 uppercase tracking-widest mb-4 [-webkit-text-stroke:1px_white]">Architecture Suite</h2>
+        <h2 className="text-lg font-bold text-indigo-600 uppercase tracking-widest mb-4 [-webkit-text-stroke:1px_white]">Architecture Suite</h2>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <h3 className="text-4xl font-bold text-slate-900 max-w-2xl">
             Modular intelligence systems designed for deep vertical execution.
           </h3>
-          <p className="text-slate-500 max-w-sm [-webkit-text-stroke:1px_black]">
+          <p className="text-xl text-slate-500 max-w-sm [-webkit-text-stroke:1px_black]">
             Each architecture operates as a standalone pipeline or integrates into a unified infrastructure.
           </p>
         </div>
