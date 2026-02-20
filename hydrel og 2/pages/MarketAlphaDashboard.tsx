@@ -396,7 +396,7 @@ export const MarketAlphaDashboard: React.FC = () => {
   return (
     <div 
       className="min-h-screen bg-cover bg-center bg-fixed bg-gradient-to-br from-indigo-950 via-purple-900/30 to-amber-100/20 text-slate-900 font-sans"
-      style={{ backgroundImage: 'url("/images/dashboard-bg.webp")' }}
+      style={{ backgroundImage: 'url("/images/hero-bg.webp")' }}
     >
       {/* --- Header --- */}
       <header className="bg-white/80 backdrop-blur-md border-b border-indigo-200/50 sticky top-0 z-40 shadow-sm">
