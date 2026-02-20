@@ -7,7 +7,7 @@ const IntroPage: React.FC = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate('/market-alpha'); // Redirect to home/main app after animation
+      navigate('/'); // Redirect to the main page after animation
     }, 2000);
     return () => clearTimeout(timer);
   }, [navigate]);
