@@ -45,9 +45,9 @@ export const HowItWorks: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-20">
-        <h2 className="text-sm font-bold text-indigo-600 uppercase tracking-[0.2em] mb-4">Core Methodology</h2>
+        <h2 className="text-sm font-bold text-indigo-600 uppercase tracking-[0.2em] mb-4 [-webkit-text-stroke:1px_white]">Core Methodology</h2>
         <h3 className="text-4xl font-bold text-slate-900 mb-6">Built for clarity and performance</h3>
-        <p className="text-slate-500 max-w-2xl mx-auto">
+        <p className="text-slate-500 max-w-2xl mx-auto [-webkit-text-stroke:1px_black]">
           Our systems follow a rigid methodology to ensure every unit of intelligence is verified and executable.
         </p>
       </div>
@@ -65,7 +65,7 @@ export const HowItWorks: React.FC = () => {
                 </div>
               </div>
               <h4 className="text-xl font-bold text-slate-900 mb-4">{step.title}</h4>
-              <p className="text-slate-500 text-sm leading-relaxed px-4">{step.desc}</p>
+              <p className="text-slate-500 text-sm leading-relaxed px-4 [-webkit-text-stroke:1px_black]">{step.desc}</p>
             </div>
           ))}
         </div>
