@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export const Hero: React.FC = () => {
@@ -9,17 +10,17 @@ export const Hero: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-[90vh] flex items-center overflow-hidden bg-white">
+    <div className="relative min-h-[90vh] flex items-center overflow-hidden bg-transparent">
       {/* Stripe-style gradient background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-[120%] bg-[#f6f9fc] skew-y-[-6deg] origin-top-left transform -translate-y-20">
-             <div className="absolute inset-0 w-full h-full opacity-60" 
+        <div className="absolute top-0 left-0 w-full h-[120%] bg-white/10 skew-y-[-6deg] origin-top-left transform -translate-y-20">
+             <div className="absolute inset-0 w-full h-full opacity-30" 
                   style={{
                     backgroundImage: `
-                      radial-gradient(at 77% 12%, hsla(245, 68%, 78%, 1) 0px, transparent 50%),
-                      radial-gradient(at 0% 12%, hsla(180, 77%, 78%, 1) 0px, transparent 50%),
-                      radial-gradient(at 90% 90%, hsla(333, 64%, 81%, 1) 0px, transparent 50%),
-                      radial-gradient(at 12% 84%, hsla(208, 62%, 84%, 1) 0px, transparent 50%)
+                      radial-gradient(at 77% 12%, hsla(245, 68%, 78%, 0.4) 0px, transparent 50%),
+                      radial-gradient(at 0% 12%, hsla(180, 77%, 78%, 0.4) 0px, transparent 50%),
+                      radial-gradient(at 90% 90%, hsla(333, 64%, 81%, 0.4) 0px, transparent 50%),
+                      radial-gradient(at 12% 84%, hsla(208, 62%, 84%, 0.4) 0px, transparent 50%)
                     `
                   }}>
              </div>
