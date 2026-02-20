@@ -457,24 +457,24 @@ export const MarketAlphaDashboard: React.FC = () => {
                 onClick={() => setAgentMode('listing')}
                 className={`p-6 rounded-2xl border-l-4 text-left transition-all duration-300 relative overflow-hidden group shadow-sm hover:shadow-md ${
                   agentMode === 'listing' 
-                    ? 'bg-indigo-50/80 border-l-blue-500 border-y border-r border-indigo-200/50 ring-1 ring-blue-100' 
-                    : 'bg-indigo-50/80 border-l-slate-200 border-y border-r border-indigo-200/50 hover:border-l-blue-300'
+                    ? 'bg-blue-700 border-l-blue-400 border-y border-r border-blue-800 text-white ring-2 ring-blue-500/20 scale-[1.02] shadow-blue-900/20' 
+                    : 'bg-indigo-50/40 border-l-slate-200 border-y border-r border-indigo-200/50 hover:border-l-blue-300 text-slate-500'
                 }`}
               >
-                <h3 className={`text-xl font-bold mb-1 ${agentMode === 'listing' ? 'text-blue-900' : 'text-slate-500'}`}>LISTING AGENT</h3>
-                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Seller Representation</p>
+                <h3 className={`text-xl font-bold mb-1 ${agentMode === 'listing' ? 'text-white' : 'text-slate-500'}`}>LISTING AGENT</h3>
+                <p className={`text-xs font-medium uppercase tracking-wider ${agentMode === 'listing' ? 'text-blue-100' : 'text-slate-400'}`}>Seller Representation</p>
               </button>
 
               <button 
                 onClick={() => setAgentMode('buying')}
                 className={`p-6 rounded-2xl border-l-4 text-left transition-all duration-300 relative overflow-hidden group shadow-sm hover:shadow-md ${
                   agentMode === 'buying' 
-                    ? 'bg-indigo-50/80 border-l-cyan-500 border-y border-r border-indigo-200/50 ring-1 ring-cyan-100' 
-                    : 'bg-indigo-50/80 border-l-slate-200 border-y border-r border-indigo-200/50 hover:border-l-cyan-300'
+                    ? 'bg-cyan-700 border-l-cyan-400 border-y border-r border-cyan-800 text-white ring-2 ring-cyan-500/20 scale-[1.02] shadow-cyan-900/20' 
+                    : 'bg-indigo-50/40 border-l-slate-200 border-y border-r border-indigo-200/50 hover:border-l-cyan-300 text-slate-500'
                 }`}
               >
-                <h3 className={`text-xl font-bold mb-1 ${agentMode === 'buying' ? 'text-cyan-900' : 'text-slate-500'}`}>BUYING AGENT</h3>
-                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Buyer Representation</p>
+                <h3 className={`text-xl font-bold mb-1 ${agentMode === 'buying' ? 'text-white' : 'text-slate-500'}`}>BUYING AGENT</h3>
+                <p className={`text-xs font-medium uppercase tracking-wider ${agentMode === 'buying' ? 'text-cyan-100' : 'text-slate-400'}`}>Buyer Representation</p>
               </button>
             </div>
 
