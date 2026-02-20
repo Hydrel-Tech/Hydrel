@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import AsyncSelect from 'react-select/async';
 import { FixedSizeList as List } from 'react-window';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import USAmap from '../components/USAmap';
+import DashboardIntroOverlay from '../components/DashboardIntroOverlay';
 
 // --- Types & Constants ---
 type AgentMode = 'buying' | 'listing';
@@ -112,11 +113,28 @@ const VirtualizedMenuList = (props: any) => {
 export const MarketAlphaDashboard: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showIntro, setShowIntro] = useState(false);
   
   // UI State
   const [agentMode, setAgentMode] = useState<AgentMode>('buying');
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [formState, setFormState] = useState<Record<string, string>>({});
+  
+  // Selected Params for multi-select
+  const [selectedParams, setSelectedParams] = useState<Record<string, string[]>>({
+    focus: [], concerns: [], horizon: [], posture: [],
+    goal: [], timeline: [], budget: [], target: [], stance: []
+  });
+
+  useEffect(() => {
+    if (location.state?.showIntro) {
+      setShowIntro(true);
+      // Clear the state so it doesn't show again on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   // Selected Region IDs are now strings like 'northeast', 'west' to match Map Component
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>([]);
   const [savedRegions, setSavedRegions] = useState<string[]>([]);
@@ -308,6 +326,40 @@ export const MarketAlphaDashboard: React.FC = () => {
     setFormState(prev => ({ ...prev, [`${agentMode}_${key}`]: value }));
   };
 
+  const handleParamToggle = (groupId: string, option: string) => {
+    setSelectedParams(prev => {
+      const current = prev[groupId] || [];
+      const updated = current.includes(option) 
+        ? current.filter(o => o !== option) 
+        : [...current, option];
+      return { ...prev, [groupId]: updated };
+    });
+  };
+
+  const renderCheckboxGroup = (label: string, id: string, options: string[]) => {
+    const selected = selectedParams[id] || [];
+    return (
+      <div key={id} className="relative z-10 space-y-3 pb-2">
+        <label className="block text-xs text-slate-500 font-bold mb-2 ml-1">{label}</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {options.map(opt => (
+            <button
+              key={opt}
+              onClick={() => handleParamToggle(id, opt)}
+              className={`text-left px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
+                selected.includes(opt)
+                  ? 'bg-orange-500 border-orange-600 text-white shadow-sm'
+                  : 'bg-purple-50/60 border-indigo-200/50 text-slate-600 hover:border-orange-300'
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const handleAnalyze = async () => {
     if (!user || processing) return;
 
@@ -338,10 +390,14 @@ export const MarketAlphaDashboard: React.FC = () => {
   };
 
   const limitReached = usageCount >= monthlyLimit;
-  const isFormValid = selectedRegionIds.length > 0 && selectedZip?.value && question.length > 0 && !limitReached;
+  const hasSelectedAnyParam = Object.values(selectedParams).some(arr => arr.length > 0);
+  const isFormValid = selectedRegionIds.length > 0 && selectedZip?.value && question.length > 0 && !limitReached && hasSelectedAnyParam;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900/30 to-amber-100/20 text-slate-900 font-sans">
+    <div 
+      className="min-h-screen bg-cover bg-center bg-fixed bg-gradient-to-br from-indigo-950 via-purple-900/30 to-amber-100/20 text-slate-900 font-sans"
+      style={{ backgroundImage: 'url("/images/dashboard-bg.webp")' }}
+    >
       {/* --- Header --- */}
       <header className="bg-white/80 backdrop-blur-md border-b border-indigo-200/50 sticky top-0 z-40 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
@@ -366,7 +422,10 @@ export const MarketAlphaDashboard: React.FC = () => {
           
           <div className="flex items-center gap-6">
             <button 
-              onClick={() => navigate('/pricing')}
+              onClick={() => {
+                window.scrollTo(0, 0);
+                navigate('/market-alpha/pricing');
+              }}
               className="flex items-center gap-1 px-3 py-1.5 bg-indigo-50/80 hover:bg-indigo-100 rounded-full text-xs font-bold text-indigo-700 transition-colors border border-indigo-200/50 shadow-sm"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -428,17 +487,7 @@ export const MarketAlphaDashboard: React.FC = () => {
               </h4>
               
               {(agentMode === 'buying' ? BUYER_DROPDOWNS : LISTING_DROPDOWNS).map((field) => (
-                <div key={field.id} className="relative z-10">
-                  <label className="block text-xs text-slate-500 font-bold mb-2 ml-1">{field.label}</label>
-                  <select 
-                    className="w-full bg-purple-50/60 border border-indigo-200/50 rounded-lg px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none"
-                    value={formState[`${agentMode}_${field.id}`] || ''}
-                    onChange={(e) => handleDropdownChange(field.id, e.target.value)}
-                  >
-                    <option value="">Select option...</option>
-                    {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
+                renderCheckboxGroup(field.label, field.id, field.options)
               ))}
             </div>
             
@@ -715,6 +764,7 @@ export const MarketAlphaDashboard: React.FC = () => {
           </div>
         </div>
       )}
+      {showIntro && <DashboardIntroOverlay onClose={() => setShowIntro(false)} />}
     </div>
   );
 };
