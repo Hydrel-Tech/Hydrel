@@ -16,6 +16,7 @@
     "react-leaflet": "^4.2.1",
     "react-select": "^5.8.0",
     "react-window": "^1.8.10",
+    "framer-motion": "^11.0.0",
     "@supabase/supabase-js": "2.39.8"
   },
   "devDependencies": {
