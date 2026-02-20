@@ -51,6 +51,10 @@ export const MarketAlphaPricing: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     // If no user, reset to -1 immediately so buttons show "Choose Plan"
     if (!user) {
       setCurrentTierLevel(-1);
@@ -99,7 +103,7 @@ export const MarketAlphaPricing: React.FC = () => {
     }
 
     if (index === currentTierLevel) {
-      navigate('/market-alpha/dashboard');
+      navigate('/market-alpha/dashboard', { state: { showIntro: true } });
     } else if (index > currentTierLevel) {
       // Logic to upgrade (e.g. Stripe checkout)
       alert("Redirecting to payment gateway...");
