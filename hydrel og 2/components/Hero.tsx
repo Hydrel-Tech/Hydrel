@@ -31,14 +31,14 @@ export const Hero: React.FC = () => {
         <div className="max-w-2xl pt-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/5 border border-slate-900/10 backdrop-blur-sm mb-8 animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-            <span className="text-xs font-semibold text-slate-600 tracking-widest uppercase">System Intelligence v3.0</span>
+            <span className="text-xs font-semibold text-slate-600 tracking-widest uppercase [-webkit-text-stroke:1px_black]">System Intelligence v3.0</span>
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold text-slate-900 mb-6 leading-[1.1] tracking-tight text-balance">
             Infrastructure for <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-cyan-600">Decision Excellence</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed max-w-xl">
+          <p className="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed max-w-xl [-webkit-text-stroke:1px_black]">
             Hydrel builds high-fidelity data pipelines and execution systems that transform complex market variables into clear institutional outcomes.
           </p>
           
