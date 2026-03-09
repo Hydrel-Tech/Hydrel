@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabaseClient';
 
 const pricingTiers = [
   {
-    name: 'Starter',
+    name: 'Starter (Low Netty)',
     price: '$0',
     desc: 'Basic analytics only. Get a feel for the system with essential insights in a limited geographical range. Ideal for trying out the core capabilities of the platform without commitment.',
     color: 'bg-[#FFFDF5]', // Very light gold
@@ -96,19 +96,19 @@ export const MarketAlphaPricing: React.FC = () => {
 
   const handlePlanClick = (index: number) => {
     if (!user) {
-        // If not logged in, redirect to login or signup (for this demo, maybe just alert or go to signup)
-        // Since the prompt requested the popup logic on "Get System", here we assume standard flow.
         navigate('/signup'); 
         return;
     }
 
     if (index === currentTierLevel) {
-      navigate('/market-alpha/dashboard', { state: { showIntro: true } });
+      const showIntro = localStorage.getItem('showIntroAnimation') !== 'false';
+      navigate('/market-alpha/dashboard', { state: { showIntro } });
     } else if (index > currentTierLevel) {
       // Logic to upgrade (e.g. Stripe checkout)
       alert("Redirecting to payment gateway...");
     }
   };
+
 
   return (
     <div className="bg-[#f6f9fc] min-h-screen pt-24 pb-20">
@@ -133,6 +133,30 @@ export const MarketAlphaPricing: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6">
+        {/* Intro Animation Toggle */}
+        <div className="mb-12 flex justify-center">
+           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-6">
+              <div className="flex flex-col">
+                 <span className="text-sm font-black text-slate-900 uppercase tracking-tight">System Experience</span>
+                 <span className="text-xs text-slate-500 font-medium">Show "WE ARE HERE" intro animation when entering dashboard</span>
+              </div>
+              <button 
+                onClick={() => {
+                  const current = localStorage.getItem('showIntroAnimation') !== 'false';
+                  localStorage.setItem('showIntroAnimation', String(!current));
+                  location.reload(); 
+                }}
+                className={`w-14 h-8 rounded-full transition-all relative ${
+                  (localStorage.getItem('showIntroAnimation') !== 'false') ? 'bg-indigo-600' : 'bg-slate-200'
+                }`}
+              >
+                <div className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-sm transition-all ${
+                  (localStorage.getItem('showIntroAnimation') !== 'false') ? 'left-7' : 'left-1'
+                }`} />
+              </button>
+           </div>
+        </div>
+
         {loading ? (
           <div className="text-center py-20 text-slate-500">Loading subscription data...</div>
         ) : (
