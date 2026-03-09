@@ -9,7 +9,15 @@ import USAmap from '../components/USAmap';
 import DashboardIntroOverlay from '../components/DashboardIntroOverlay';
 
 // --- Types & Constants ---
-type AgentMode = 'buying' | 'listing';
+type AgentMode = 'buying' | 'listing' | 'investor' | 'flipper';
+
+interface PropertySpecs {
+  min_sqft: string;
+  max_sqft: string;
+  beds: string;
+  status: string;
+  sort: string;
+}
 
 const BUYER_DROPDOWNS = [
   { id: 'focus', label: 'Analysis Focus', options: ['Making an Offer', 'Investment Analysis', 'Comparison Shopping', 'Risk Assessment', 'Long-term Value'] },
@@ -30,6 +38,13 @@ const SHARED_DROPDOWNS = [
   { id: 'beds', label: 'Bedrooms', options: ['Any', '1+', '2+', '3+', '4+', '5+'] },
   { id: 'status', label: 'Status', options: ['Active Only', 'Active + Pending', 'All (Include Sold)'] },
   { id: 'sort', label: 'Sort By', options: ['Relevance', 'Price (Low to High)', 'Price (High to Low)', 'Newest First', 'Days on Market'] }
+];
+
+const ENGINE_OPTIONS: { id: AgentMode; label: string; icon: string }[] = [
+  { id: 'listing', label: 'Listing Agent', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+  { id: 'buying', label: 'Buying Agent', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+  { id: 'investor', label: 'Investor', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+  { id: 'flipper', label: 'Flipper', icon: 'M13 10V3L4 14h7v7l9-11h-7z' }
 ];
 
 // Mapping helper for DB queries (Frontend names -> Backend UUIDs)
@@ -119,6 +134,43 @@ export const MarketAlphaDashboard: React.FC = () => {
   // UI State
   const [agentMode, setAgentMode] = useState<AgentMode>('buying');
   const [isMapOpen, setIsMapOpen] = useState(false);
+  const [isEngineModalOpen, setIsEngineModalOpen] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [propertySpecs, setPropertySpecs] = useState<PropertySpecs>({
+    min_sqft: '',
+    max_sqft: '',
+    beds: 'Any',
+    status: 'Active Only',
+    sort: 'Relevance'
+  });
+  
+  // Engine specific params
+  const [buyingParams, setBuyingParams] = useState({
+    budget: '',
+    family_size: '',
+    school_distance: '',
+    bedrooms_preference: '',
+    safety_priority: 'medium'
+  });
+
+  const [listingParams, setListingParams] = useState({
+    seller_goal: 'max_price',
+    improvement_budget: '',
+    timeline: 'flexible'
+  });
+
+  const [investorParams, setInvestorParams] = useState({
+    target_cap_rate: '',
+    risk_tolerance: 'medium',
+    holding_period: ''
+  });
+
+  const [flipperParams, setFlipperParams] = useState({
+    purchase_price: '',
+    renovation_budget: '',
+    target_profit: ''
+  });
+
   const [formState, setFormState] = useState<Record<string, string>>({});
   
   // Selected Params for multi-select
@@ -130,7 +182,6 @@ export const MarketAlphaDashboard: React.FC = () => {
   useEffect(() => {
     if (location.state?.showIntro) {
       setShowIntro(true);
-      // Clear the state so it doesn't show again on refresh
       window.history.replaceState({}, document.title);
     }
   }, [location]);
@@ -152,6 +203,9 @@ export const MarketAlphaDashboard: React.FC = () => {
   
   // Lock logic
   const hasAnalyzed = usageCount > 0;
+
+  // Confirmation toggle from localStorage
+  const showConfirmToggle = localStorage.getItem('showReportConfirmation') !== 'false';
 
   // Simple debounce utility
   const debounce = (fn: Function, delay: number) => {
@@ -363,24 +417,50 @@ export const MarketAlphaDashboard: React.FC = () => {
   const handleAnalyze = async () => {
     if (!user || processing) return;
 
-    // Validate valid zip selection
     if (!selectedZip || !selectedZip.value) {
       alert('Please select a valid zip code from the list.');
       return;
     }
 
+    // Trigger confirmation modal if enabled
+    if (showConfirmToggle && !showConfirmModal) {
+      setShowConfirmModal(true);
+      return;
+    }
+
     setProcessing(true);
+    setShowConfirmModal(false);
+
+    // Prepare Payload
+    const intent_params = 
+      agentMode === 'buying' ? buyingParams :
+      agentMode === 'listing' ? listingParams :
+      agentMode === 'investor' ? investorParams :
+      flipperParams;
+
+    // Add multi-selects to intent_params
+    const final_intent_params = {
+      ...intent_params,
+      ...selectedParams
+    };
 
     try {
       const { error } = await supabase
         .from('user_analyses')
-        .insert([{ user_id: user.id, question: question, zip_code: selectedZip.value, mode: agentMode }]);
+        .insert([{ 
+          user_id: user.id, 
+          question: question, 
+          zip_code: selectedZip.value, 
+          mode: agentMode,
+          property_specs: propertySpecs,
+          intent_params: final_intent_params
+        }]);
 
       if (!error) {
         setUsageCount(prev => prev + 1);
         alert("Analysis request sent to core engine.");
       } else {
-        alert("Error recording analysis.");
+        alert("Error recording analysis: " + error.message);
       }
     } catch (e) {
       console.error(e);
@@ -390,54 +470,179 @@ export const MarketAlphaDashboard: React.FC = () => {
   };
 
   const limitReached = usageCount >= monthlyLimit;
-  const hasSelectedAnyParam = Object.values(selectedParams).some(arr => arr.length > 0);
-  const isFormValid = selectedRegionIds.length > 0 && selectedZip?.value && question.length > 0 && !limitReached && hasSelectedAnyParam;
+  const isFormValid = selectedRegionIds.length > 0 && selectedZip?.value && question.length > 0 && !limitReached;
 
   return (
     <div 
-      className="min-h-screen bg-cover bg-center bg-fixed bg-gradient-to-br from-indigo-950 via-purple-900/30 to-amber-100/20 text-slate-900 font-sans"
-      style={{ backgroundImage: 'url("/images/hero-bg.webp")' }}
+      className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans"
     >
-      {/* --- Header --- */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-indigo-200/50 sticky top-0 z-40 shadow-sm">
+      {/* ... header ... */}
+...
+      {/* --- Map Modal --- */}
+      {isMapOpen && (
+        // ... (existing map modal code)
+      )}
+
+      {/* --- Engine Selection Modal (Mobile) --- */}
+      {isEngineModalOpen && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-fade-in-up">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+              <h3 className="text-lg font-black uppercase tracking-tight">Select Analysis Engine</h3>
+              <button onClick={() => setIsEngineModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="p-4 grid gap-3">
+              {ENGINE_OPTIONS.map((engine) => (
+                <button
+                  key={engine.id}
+                  onClick={() => { setAgentMode(engine.id); setIsEngineModalOpen(false); }}
+                  className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                    agentMode === engine.id ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 'bg-white border-slate-100 text-slate-600 hover:border-indigo-200'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${agentMode === engine.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={engine.icon} /></svg>
+                  </div>
+                  <span className="font-bold uppercase text-sm tracking-widest">{engine.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Confirmation Modal --- */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[110] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-fade-in border border-indigo-100">
+            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-indigo-50/30">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-1">Confirm Intelligence Directive</h3>
+                <p className="text-xs text-indigo-600 font-bold uppercase tracking-widest">Verify analysis parameters before execution</p>
+              </div>
+              <button onClick={() => setShowConfirmModal(false)} className="w-10 h-10 rounded-full hover:bg-white flex items-center justify-center text-slate-400 transition-colors">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="p-8 max-h-[60vh] overflow-y-auto space-y-8">
+               <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Context</h4>
+                    <div className="space-y-3">
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-medium">Zip Code</span>
+                          <span className="font-bold text-slate-900">{selectedZip?.label}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-medium">Engine</span>
+                          <span className="px-3 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-full uppercase">{agentMode}</span>
+                       </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Specs</h4>
+                    <div className="space-y-3">
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-medium">SqFt Range</span>
+                          <span className="font-bold text-slate-900">{propertySpecs.min_sqft || '0'} - {propertySpecs.max_sqft || 'Max'}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-medium">Beds</span>
+                          <span className="font-bold text-slate-900">{propertySpecs.beds}</span>
+                       </div>
+                    </div>
+                  </div>
+               </div>
+
+               <div className="space-y-4">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Intent Parameters</h4>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-3 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                     {Object.entries(agentMode === 'buying' ? buyingParams : agentMode === 'listing' ? listingParams : agentMode === 'investor' ? investorParams : flipperParams).map(([key, val]) => (
+                        <div key={key} className="flex justify-between items-center text-sm">
+                           <span className="text-slate-500 capitalize">{key.replace('_', ' ')}</span>
+                           <span className="font-bold text-slate-900">{val || 'N/A'}</span>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+
+               <div className="space-y-4">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Directive</h4>
+                  <p className="text-sm text-slate-600 italic bg-amber-50/50 p-4 rounded-2xl border border-amber-100/50 leading-relaxed">
+                    "{question}"
+                  </p>
+               </div>
+            </div>
+
+            <div className="p-8 bg-slate-50/50 border-t border-slate-50 flex gap-4">
+               <button 
+                 onClick={() => setShowConfirmModal(false)}
+                 className="flex-1 py-4 bg-white border-2 border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all"
+               >
+                 Cancel
+               </button>
+               <button 
+                 onClick={handleAnalyze}
+                 className="flex-1 py-4 bg-indigo-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:scale-[1.02] transition-all"
+               >
+                 Confirm & Execute
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showIntro && <DashboardIntroOverlay onClose={() => setShowIntro(false)} />}
+    </div>
+  );
+};
+      <header className="bg-white/90 backdrop-blur-md border-b border-indigo-100 sticky top-0 z-40 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <div className="relative w-8 h-8">
-               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full filter drop-shadow-sm">
-                  <defs>
-                    <linearGradient id="cubeGradientDash" x1="12" y1="2" x2="12" y2="23" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#4338ca" />
-                      <stop offset="1" stopColor="#312e81" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M12 2L2.5 7.5V17.5L12 23L21.5 17.5V7.5L12 2Z" fill="url(#cubeGradientDash)" stroke="#6366f1" strokeWidth="1" strokeLinejoin="round"/>
-                  <path d="M12 2V12.5M21.5 7.5L12 12.5M2.5 7.5L12 12.5" stroke="#6366f1" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <line x1="-1" y1="13" x2="25" y2="13" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" className="drop-shadow-[0_0_6px_rgba(239,68,68,0.9)]" />
-               </svg>
-            </div>
-             <h1 className="text-lg font-bold tracking-tight text-slate-900 uppercase hidden md:block">HYDREL</h1>
-             <span className="text-slate-300 text-2xl font-thin hidden md:block">|</span>
-             <span className="text-xs font-bold tracking-widest text-slate-500 uppercase">Real Estate Intelligence</span>
+             <Link to="/" className="flex items-center gap-3 group">
+               <div className="relative w-8 h-8 group-hover:scale-110 transition-transform">
+                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full filter drop-shadow-sm">
+                    <defs>
+                      <linearGradient id="cubeGradientDash" x1="12" y1="2" x2="12" y2="23" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#4338ca" />
+                        <stop offset="1" stopColor="#312e81" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M12 2L2.5 7.5V17.5L12 23L21.5 17.5V7.5L12 2Z" fill="url(#cubeGradientDash)" stroke="#6366f1" strokeWidth="1" strokeLinejoin="round"/>
+                    <path d="M12 2V12.5M21.5 7.5L12 12.5M2.5 7.5L12 12.5" stroke="#6366f1" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="-1" y1="13" x2="25" y2="13" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" className="drop-shadow-[0_0_6px_rgba(239,68,68,0.9)]" />
+                 </svg>
+              </div>
+               <h1 className="text-lg font-black tracking-tight text-slate-900 uppercase hidden md:block">HYDREL</h1>
+             </Link>
+             <span className="text-slate-200 text-2xl font-thin hidden md:block">|</span>
+             <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase hidden sm:block">Intelligence Console</span>
           </div>
           
-          <div className="flex items-center gap-6">
-            <button 
-              onClick={() => {
-                window.scrollTo(0, 0);
-                navigate('/market-alpha/pricing');
-              }}
-              className="flex items-center gap-1 px-3 py-1.5 bg-indigo-50/80 hover:bg-indigo-100 rounded-full text-xs font-bold text-indigo-700 transition-colors border border-indigo-200/50 shadow-sm"
+          <div className="flex items-center gap-4 md:gap-8">
+            <Link 
+              to="/"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-full text-xs font-bold text-slate-600 transition-all border border-slate-200"
             >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
+              <span className="hidden sm:inline">Home</span>
+            </Link>
+            <button 
+              onClick={() => navigate('/market-alpha/pricing')}
+              className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-100 border border-indigo-200 transition-all shadow-sm"
+            >
               Plans
             </button>
-            <div className="text-right hidden sm:block">
-              <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">OPERATOR</p>
-              <p className="text-sm font-bold text-slate-900">{user?.email}</p>
+            <div className="text-right hidden lg:block">
+              <p className="text-[9px] text-slate-400 font-black tracking-widest uppercase mb-0.5">Operator</p>
+              <p className="text-xs font-bold text-slate-700 truncate max-w-[150px]">{user?.email}</p>
             </div>
-             <button onClick={() => signOut()} className="text-slate-400 hover:text-red-500 transition-colors">
+             <button onClick={() => signOut()} className="p-2 text-slate-400 hover:text-red-500 transition-colors bg-slate-50 hover:bg-red-50 rounded-lg border border-slate-200">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
             </button>
           </div>
@@ -446,70 +651,359 @@ export const MarketAlphaDashboard: React.FC = () => {
 
       {/* --- Main Content --- */}
       <div className="max-w-[1600px] mx-auto px-6 py-8">
-        <div className="grid lg:grid-cols-[400px_1fr] gap-8">
+        {/* Mobile Engine Selector Trigger */}
+        <div className="lg:hidden mb-6">
+          <button 
+            onClick={() => setIsEngineModalOpen(true)}
+            className="w-full flex items-center justify-between p-5 bg-white border-2 border-indigo-100 rounded-2xl shadow-sm group hover:border-indigo-400 transition-all"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={ENGINE_OPTIONS.find(e => e.id === agentMode)?.icon} />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Engine</p>
+                <p className="text-lg font-black text-slate-900 uppercase">
+                  {ENGINE_OPTIONS.find(e => e.id === agentMode)?.label}
+                </p>
+              </div>
+            </div>
+            <div className="px-4 py-2 bg-slate-50 group-hover:bg-indigo-50 rounded-xl border border-slate-200 group-hover:border-indigo-200 text-[10px] font-black uppercase text-slate-500 group-hover:text-indigo-600 transition-all">
+              Change
+            </div>
+          </button>
+        </div>
+
+        <div className="flex flex-col lg:grid lg:grid-cols-[400px_1fr] gap-8">
           
-          {/* --- Left Column: Controls (Blue/Cyan Theme) --- */}
-          <div className="space-y-8">
+          {/* Right Column (Map) - ORDER: FIRST ON MOBILE, SECOND ON DESKTOP */}
+          <div className="flex flex-col gap-6 order-1 lg:order-2">
             
-            {/* Agent Toggles */}
-            <div className="flex flex-col gap-3">
-              <button 
-                onClick={() => setAgentMode('listing')}
-                className={`p-6 rounded-2xl border-l-4 text-left transition-all duration-300 relative overflow-hidden group shadow-sm hover:shadow-md ${
-                  agentMode === 'listing' 
-                    ? 'bg-blue-700 border-l-blue-400 border-y border-r border-blue-800 text-white ring-2 ring-blue-500/20 scale-[1.02] shadow-blue-900/20' 
-                    : 'bg-indigo-50/40 border-l-slate-200 border-y border-r border-indigo-200/50 hover:border-l-blue-300 text-slate-500'
-                }`}
-              >
-                <h3 className={`text-xl font-bold mb-1 ${agentMode === 'listing' ? 'text-white' : 'text-slate-500'}`}>LISTING AGENT</h3>
-                <p className={`text-xs font-medium uppercase tracking-wider ${agentMode === 'listing' ? 'text-blue-100' : 'text-slate-400'}`}>Seller Representation</p>
-              </button>
-
-              <button 
-                onClick={() => setAgentMode('buying')}
-                className={`p-6 rounded-2xl border-l-4 text-left transition-all duration-300 relative overflow-hidden group shadow-sm hover:shadow-md ${
-                  agentMode === 'buying' 
-                    ? 'bg-cyan-700 border-l-cyan-400 border-y border-r border-cyan-800 text-white ring-2 ring-cyan-500/20 scale-[1.02] shadow-cyan-900/20' 
-                    : 'bg-indigo-50/40 border-l-slate-200 border-y border-r border-indigo-200/50 hover:border-l-cyan-300 text-slate-500'
-                }`}
-              >
-                <h3 className={`text-xl font-bold mb-1 ${agentMode === 'buying' ? 'text-white' : 'text-slate-500'}`}>BUYING AGENT</h3>
-                <p className={`text-xs font-medium uppercase tracking-wider ${agentMode === 'buying' ? 'text-cyan-100' : 'text-slate-400'}`}>Buyer Representation</p>
-              </button>
-            </div>
-
-            {/* Dynamic Dropdowns */}
-            <div className="bg-indigo-50/80 border border-indigo-200/50 rounded-2xl p-6 space-y-5 shadow-sm relative overflow-hidden text-slate-900">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-bl-full -mr-10 -mt-10 pointer-events-none"></div>
-
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-indigo-100 pb-2 relative z-10">
-                {agentMode === 'buying' ? 'Acquisition Parameters' : 'Disposition Parameters'}
-              </h4>
+            {/* Region Selector */}
+            <div 
+              onClick={() => setIsMapOpen(true)}
+              className="bg-white/80 backdrop-blur-sm border border-orange-200 rounded-2xl p-6 md:p-8 cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all group relative overflow-hidden shadow-sm"
+            >
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-orange-100 group-hover:bg-orange-500 transition-colors"></div>
               
-              {(agentMode === 'buying' ? BUYER_DROPDOWNS : LISTING_DROPDOWNS).map((field) => (
-                renderCheckboxGroup(field.label, field.id, field.options)
-              ))}
+              <div className="flex items-center justify-between relative z-10 pl-4">
+                <div>
+                   <h3 className="text-xl md:text-2xl font-black text-slate-900 mb-1 group-hover:text-orange-600 transition-colors uppercase tracking-tight">
+                    {selectedRegionIds.length === 0 ? 'Select Target Region' : `${selectedRegionIds.length} Region${selectedRegionIds.length !== 1 ? 's' : ''} Selected`}
+                  </h3>
+                   <p className="text-slate-500 text-xs md:text-sm font-medium">
+                    {selectedRegionIds.length === 0 
+                      ? 'Geographical intelligence mapping required' 
+                      : `Active Analysis Scope: [${selectedRegionIds.join(', ')}]`}
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all transform group-hover:rotate-12">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 7m0 13V7m0 0L9 7" /></svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Zip Code Selector */}
+            {selectedRegionIds.length > 0 && (
+               <div className="bg-white border border-indigo-100 rounded-2xl p-6 shadow-sm relative overflow-visible z-30">
+                 <label className="block text-[10px] text-indigo-500 font-black mb-3 ml-1 uppercase tracking-widest">Target Market Index (Zip)</label>
+                 <AsyncSelect
+                    cacheOptions
+                    loadOptions={debouncedLoadOptions}
+                    defaultOptions={false}
+                    value={selectedZip}
+                    onChange={(opt) => setSelectedZip(opt)}
+                    placeholder="Search by zip code (e.g. 90210)"
+                    isClearable
+                    noOptionsMessage={({ inputValue }) =>
+                      !inputValue || inputValue.length < 2
+                        ? "Enter at least 2 digits"
+                        : "No matching results"
+                    }
+                    className="w-full"
+                    classNamePrefix="react-select"
+                    components={{ MenuList: VirtualizedMenuList }}
+                    styles={{
+                      control: (base) => ({ 
+                        ...base, 
+                        backgroundColor: '#f8fafc', 
+                        borderColor: '#e2e8f0',
+                        borderRadius: '12px',
+                        minHeight: '48px',
+                        boxShadow: 'none',
+                        borderWidth: '2px',
+                        '&:hover': { borderColor: '#6366f1' },
+                        '&:focus-within': { borderColor: '#6366f1' }
+                      }),
+                      menu: (base) => ({ ...base, zIndex: 50, borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }),
+                      option: (base, { isFocused, isSelected }) => ({
+                        ...base,
+                        backgroundColor: isSelected ? '#6366f1' : isFocused ? '#e0e7ff' : 'white',
+                        color: isSelected ? 'white' : '#1e293b',
+                        fontWeight: isSelected ? '700' : '500',
+                        fontSize: '14px'
+                      })
+                    }}
+                 />
+               </div>
+            )}
+          </div>
+
+          {/* Left Column (Controls) - ORDER: SECOND ON MOBILE, FIRST ON DESKTOP */}
+          <div className="space-y-8 order-2 lg:order-1">
+            
+            {/* Desktop Engine Selector */}
+            <div className="hidden lg:block bg-white border-2 border-indigo-100 rounded-3xl p-2 shadow-sm">
+               <div className="grid grid-cols-2 gap-2">
+                 {ENGINE_OPTIONS.map((engine) => (
+                   <button 
+                     key={engine.id}
+                     onClick={() => setAgentMode(engine.id)}
+                     className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all duration-300 border-2 ${
+                       agentMode === engine.id 
+                         ? 'bg-indigo-600 border-indigo-700 text-white shadow-lg shadow-indigo-600/20' 
+                         : 'bg-white border-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                     }`}
+                   >
+                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={engine.icon} />
+                     </svg>
+                     <span className="text-[10px] font-black uppercase tracking-widest">{engine.label}</span>
+                   </button>
+                 ))}
+               </div>
+            </div>
+
+            {/* Engine Parameters Section */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">
+                    Engine Intent Parameters
+                  </h4>
+                  <div className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[9px] font-black rounded-full uppercase">
+                    {agentMode}
+                  </div>
+               </div>
+
+               {/* Render Engine Specific Inputs */}
+               <div className="space-y-5">
+                  {agentMode === 'buying' && (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Budget ($)</label>
+                          <input 
+                            type="number" 
+                            value={buyingParams.budget}
+                            onChange={(e) => setBuyingParams({...buyingParams, budget: e.target.value})}
+                            placeholder="e.g. 500000" 
+                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Family Size</label>
+                          <input 
+                            type="number" 
+                            value={buyingParams.family_size}
+                            onChange={(e) => setBuyingParams({...buyingParams, family_size: e.target.value})}
+                            placeholder="e.g. 4" 
+                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">School Dist (mi)</label>
+                          <input 
+                            type="number" 
+                            value={buyingParams.school_distance}
+                            onChange={(e) => setBuyingParams({...buyingParams, school_distance: e.target.value})}
+                            placeholder="e.g. 2" 
+                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Min Bedrooms</label>
+                          <input 
+                            type="number" 
+                            value={buyingParams.bedrooms_preference}
+                            onChange={(e) => setBuyingParams({...buyingParams, bedrooms_preference: e.target.value})}
+                            placeholder="e.g. 3" 
+                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Safety Priority</label>
+                        <select 
+                          value={buyingParams.safety_priority}
+                          onChange={(e) => setBuyingParams({...buyingParams, safety_priority: e.target.value})}
+                          className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all appearance-none"
+                        >
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {agentMode === 'listing' && (
+                    <>
+                      <div>
+                        <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Seller Goal</label>
+                        <select 
+                          value={listingParams.seller_goal}
+                          onChange={(e) => setListingParams({...listingParams, seller_goal: e.target.value})}
+                          className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all appearance-none"
+                        >
+                          <option value="max_price">Maximize Price</option>
+                          <option value="fast_sale">Fast Sale</option>
+                          <option value="investor_target">Target Investors</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Improvement Budget ($)</label>
+                        <input 
+                          type="number" 
+                          value={listingParams.improvement_budget}
+                          onChange={(e) => setListingParams({...listingParams, improvement_budget: e.target.value})}
+                          placeholder="e.g. 10000" 
+                          className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Timeline</label>
+                        <select 
+                          value={listingParams.timeline}
+                          onChange={(e) => setListingParams({...listingParams, timeline: e.target.value})}
+                          className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all appearance-none"
+                        >
+                          <option value="immediate">Immediate (&lt;30 days)</option>
+                          <option value="flexible">Flexible (30-90 days)</option>
+                          <option value="patient">Patient (90+ days)</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {agentMode === 'investor' && (
+                    <>
+                      <div>
+                        <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Target Cap Rate (%)</label>
+                        <input 
+                          type="number" 
+                          value={investorParams.target_cap_rate}
+                          onChange={(e) => setInvestorParams({...investorParams, target_cap_rate: e.target.value})}
+                          placeholder="e.g. 7.5" 
+                          className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Risk Tolerance</label>
+                        <select 
+                          value={investorParams.risk_tolerance}
+                          onChange={(e) => setInvestorParams({...investorParams, risk_tolerance: e.target.value})}
+                          className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all appearance-none"
+                        >
+                          <option value="low">Low (Conservative)</option>
+                          <option value="medium">Medium (Moderate)</option>
+                          <option value="high">High (Aggressive)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Holding Period (Years)</label>
+                        <input 
+                          type="number" 
+                          value={investorParams.holding_period}
+                          onChange={(e) => setInvestorParams({...investorParams, holding_period: e.target.value})}
+                          placeholder="e.g. 10" 
+                          className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {agentMode === 'flipper' && (
+                    <>
+                      <div>
+                        <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Purchase Price ($)</label>
+                        <input 
+                          type="number" 
+                          value={flipperParams.purchase_price}
+                          onChange={(e) => setFlipperParams({...flipperParams, purchase_price: e.target.value})}
+                          placeholder="e.g. 350000" 
+                          className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Renovation Budget ($)</label>
+                        <input 
+                          type="number" 
+                          value={flipperParams.renovation_budget}
+                          onChange={(e) => setFlipperParams({...flipperParams, renovation_budget: e.target.value})}
+                          placeholder="e.g. 50000" 
+                          className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Target Profit ($ or %)</label>
+                        <input 
+                          type="text" 
+                          value={flipperParams.target_profit}
+                          onChange={(e) => setFlipperParams({...flipperParams, target_profit: e.target.value})}
+                          placeholder="e.g. 100000 or 25%" 
+                          className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                        />
+                      </div>
+                    </>
+                  )}
+               </div>
+
+               {/* Original Multi-Select Dropdowns */}
+               <div className="pt-4 space-y-5 border-t border-slate-100">
+                  {(agentMode === 'buying' ? BUYER_DROPDOWNS : agentMode === 'listing' ? LISTING_DROPDOWNS : []).map((field) => (
+                    renderCheckboxGroup(field.label, field.id, field.options)
+                  ))}
+               </div>
             </div>
             
-            <div className="bg-indigo-50/80 border border-indigo-200/50 rounded-2xl p-6 space-y-5 shadow-sm relative text-slate-900">
-               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-indigo-100 pb-2">
-                Property Filters
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-5 shadow-sm">
+               <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-50 pb-4">
+                Property Dimensional Filters
               </h4>
                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs text-slate-500 font-bold mb-2 ml-1">Min SqFt</label>
-                    <input type="number" placeholder="0" className="w-full bg-purple-50/60 border border-indigo-200/50 rounded-lg px-3 py-3 text-sm text-slate-700 focus:border-blue-500 focus:outline-none" />
+                    <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Min SqFt</label>
+                    <input 
+                      type="number" 
+                      value={propertySpecs.min_sqft}
+                      onChange={(e) => setPropertySpecs({...propertySpecs, min_sqft: e.target.value})}
+                      placeholder="0" 
+                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                    />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500 font-bold mb-2 ml-1">Max SqFt</label>
-                    <input type="number" placeholder="Max" className="w-full bg-purple-50/60 border border-indigo-200/50 rounded-lg px-3 py-3 text-sm text-slate-700 focus:border-blue-500 focus:outline-none" />
+                    <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">Max SqFt</label>
+                    <input 
+                      type="number" 
+                      value={propertySpecs.max_sqft}
+                      onChange={(e) => setPropertySpecs({...propertySpecs, max_sqft: e.target.value})}
+                      placeholder="Max" 
+                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all" 
+                    />
                   </div>
                </div>
                {SHARED_DROPDOWNS.map((field) => (
                 <div key={field.id}>
-                  <label className="block text-xs text-slate-500 font-bold mb-2 ml-1">{field.label}</label>
-                  <select className="w-full bg-purple-50/60 border border-indigo-200/50 rounded-lg px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-blue-500 transition-all appearance-none">
-                     <option value="">Select option...</option>
+                  <label className="block text-[10px] text-slate-400 font-black mb-2 uppercase ml-1">{field.label}</label>
+                  <select 
+                    value={(propertySpecs as any)[field.id]}
+                    onChange={(e) => setPropertySpecs({...propertySpecs, [field.id]: e.target.value})}
+                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-indigo-500 transition-all appearance-none"
+                  >
                     {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                 </div>
