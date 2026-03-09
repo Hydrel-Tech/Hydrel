@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import AsyncSelect from 'react-select/async';
 import { FixedSizeList as List } from 'react-window';
 import { useAuth } from '../context/AuthContext';
@@ -473,132 +472,8 @@ export const MarketAlphaDashboard: React.FC = () => {
   const isFormValid = selectedRegionIds.length > 0 && selectedZip?.value && question.length > 0 && !limitReached;
 
   return (
-    <div 
-      className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans"
-    >
-      {/* ... header ... */}
-...
-      {/* --- Map Modal --- */}
-      {isMapOpen && (
-        // ... (existing map modal code)
-      )}
-
-      {/* --- Engine Selection Modal (Mobile) --- */}
-      {isEngineModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-fade-in-up">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="text-lg font-black uppercase tracking-tight">Select Analysis Engine</h3>
-              <button onClick={() => setIsEngineModalOpen(false)} className="text-slate-400 hover:text-slate-600">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-            <div className="p-4 grid gap-3">
-              {ENGINE_OPTIONS.map((engine) => (
-                <button
-                  key={engine.id}
-                  onClick={() => { setAgentMode(engine.id); setIsEngineModalOpen(false); }}
-                  className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
-                    agentMode === engine.id ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 'bg-white border-slate-100 text-slate-600 hover:border-indigo-200'
-                  }`}
-                >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${agentMode === engine.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={engine.icon} /></svg>
-                  </div>
-                  <span className="font-bold uppercase text-sm tracking-widest">{engine.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- Confirmation Modal --- */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-[110] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-6">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-fade-in border border-indigo-100">
-            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-indigo-50/30">
-              <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-1">Confirm Intelligence Directive</h3>
-                <p className="text-xs text-indigo-600 font-bold uppercase tracking-widest">Verify analysis parameters before execution</p>
-              </div>
-              <button onClick={() => setShowConfirmModal(false)} className="w-10 h-10 rounded-full hover:bg-white flex items-center justify-center text-slate-400 transition-colors">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-            
-            <div className="p-8 max-h-[60vh] overflow-y-auto space-y-8">
-               <div className="grid grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Context</h4>
-                    <div className="space-y-3">
-                       <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 font-medium">Zip Code</span>
-                          <span className="font-bold text-slate-900">{selectedZip?.label}</span>
-                       </div>
-                       <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 font-medium">Engine</span>
-                          <span className="px-3 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-full uppercase">{agentMode}</span>
-                       </div>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Specs</h4>
-                    <div className="space-y-3">
-                       <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 font-medium">SqFt Range</span>
-                          <span className="font-bold text-slate-900">{propertySpecs.min_sqft || '0'} - {propertySpecs.max_sqft || 'Max'}</span>
-                       </div>
-                       <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 font-medium">Beds</span>
-                          <span className="font-bold text-slate-900">{propertySpecs.beds}</span>
-                       </div>
-                    </div>
-                  </div>
-               </div>
-
-               <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Intent Parameters</h4>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-3 p-6 bg-slate-50 rounded-3xl border border-slate-100">
-                     {Object.entries(agentMode === 'buying' ? buyingParams : agentMode === 'listing' ? listingParams : agentMode === 'investor' ? investorParams : flipperParams).map(([key, val]) => (
-                        <div key={key} className="flex justify-between items-center text-sm">
-                           <span className="text-slate-500 capitalize">{key.replace('_', ' ')}</span>
-                           <span className="font-bold text-slate-900">{val || 'N/A'}</span>
-                        </div>
-                     ))}
-                  </div>
-               </div>
-
-               <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Directive</h4>
-                  <p className="text-sm text-slate-600 italic bg-amber-50/50 p-4 rounded-2xl border border-amber-100/50 leading-relaxed">
-                    "{question}"
-                  </p>
-               </div>
-            </div>
-
-            <div className="p-8 bg-slate-50/50 border-t border-slate-50 flex gap-4">
-               <button 
-                 onClick={() => setShowConfirmModal(false)}
-                 className="flex-1 py-4 bg-white border-2 border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all"
-               >
-                 Cancel
-               </button>
-               <button 
-                 onClick={handleAnalyze}
-                 className="flex-1 py-4 bg-indigo-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:scale-[1.02] transition-all"
-               >
-                 Confirm & Execute
-               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showIntro && <DashboardIntroOverlay onClose={() => setShowIntro(false)} />}
-    </div>
-  );
-};
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans">
+      {/* --- Header --- */}
       <header className="bg-white/90 backdrop-blur-md border-b border-indigo-100 sticky top-0 z-40 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -749,6 +624,53 @@ export const MarketAlphaDashboard: React.FC = () => {
                  />
                </div>
             )}
+            
+            {/* Question Input & Analyze Button */}
+            <div className="bg-white border border-orange-200 rounded-3xl p-6 flex-grow flex flex-col shadow-sm relative overflow-hidden">
+              <div className="flex justify-between items-center mb-4 relative z-10">
+                 <label className="block text-[10px] text-slate-400 font-black uppercase tracking-widest">Analysis Directive</label>
+                 <span className={`text-[9px] uppercase font-black ${limitReached ? 'text-red-500' : 'text-orange-500'}`}>
+                    {limitReached ? 'Monthly Limit Reached' : `${usageCount} / ${monthlyLimit} Analyses Used`}
+                 </span>
+              </div>
+              
+              <textarea 
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="E.g., Compare this property to market trends, analyze investment potential vs local cap rates..."
+                className="w-full flex-grow min-h-[150px] bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all resize-none mb-6 relative z-10 font-medium text-sm"
+              />
+
+              <button 
+                onClick={handleAnalyze}
+                disabled={!isFormValid || processing}
+                className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg transition-all relative z-10 ${
+                  isFormValid 
+                    ? 'bg-orange-500 text-white hover:bg-orange-600 hover:scale-[1.01] hover:shadow-orange-500/30' 
+                    : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 shadow-none'
+                }`}
+              >
+                {limitReached 
+                  ? 'Limit Reached - Upgrade Plan' 
+                  : processing 
+                    ? 'Processing...' 
+                    : 'Generate Intelligence Report'
+                }
+              </button>
+            </div>
+
+            {/* Placeholder Report Area */}
+            <div className="border-2 border-dashed border-slate-200 rounded-3xl p-8 bg-slate-50/50">
+               <div className="flex items-center gap-2 mb-6 opacity-40">
+                  <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Synthetic Intelligence Output Feed</span>
+               </div>
+               <div className="space-y-4 opacity-5">
+                  <div className="h-3 bg-slate-900 rounded-full w-3/4"></div>
+                  <div className="h-3 bg-slate-900 rounded-full w-1/2"></div>
+                  <div className="h-3 bg-slate-900 rounded-full w-full"></div>
+               </div>
+            </div>
           </div>
 
           {/* Left Column (Controls) - ORDER: SECOND ON MOBILE, FIRST ON DESKTOP */}
@@ -1010,124 +932,6 @@ export const MarketAlphaDashboard: React.FC = () => {
               ))}
             </div>
           </div>
-
-          {/* --- Right Column: Map & Analysis (Orange Theme) --- */}
-          <div className="flex flex-col gap-6">
-            
-            {/* Region Selector */}
-            <div 
-              onClick={() => setIsMapOpen(true)}
-              className="bg-indigo-50/80 border border-orange-200/80 rounded-2xl p-8 cursor-pointer hover:border-orange-400 hover:bg-orange-50/20 transition-all group relative overflow-hidden shadow-sm"
-            >
-              <div className="absolute top-0 left-0 w-2 h-full bg-orange-100 group-hover:bg-orange-400 transition-colors"></div>
-              
-              <div className="flex items-center justify-between relative z-10 pl-4">
-                <div>
-                   <h3 className="text-2xl font-bold text-slate-800 mb-2 group-hover:text-orange-600 transition-colors">
-                    {selectedRegionIds.length === 0 ? 'Select Target Region' : `${selectedRegionIds.length} Region${selectedRegionIds.length !== 1 ? 's' : ''} Selected`}
-                  </h3>
-                   <p className="text-slate-500 text-sm">
-                    {selectedRegionIds.length === 0 
-                      ? 'Click to open geographical intelligence map' 
-                      : `Analysis Scope: [${selectedRegionIds.join(', ')}]`}
-                  </p>
-                </div>
-                <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-400 group-hover:bg-orange-100 group-hover:text-orange-600 transition-all group-hover:scale-110">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 7m0 13V7m0 0L9 7" /></svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Zip Code Selector */}
-            {selectedRegionIds.length > 0 && (
-               <div className="bg-indigo-50/80 border border-orange-200/80 rounded-2xl p-6 animate-fade-in shadow-sm relative overflow-visible z-30">
-                 <div className="absolute -top-10 -right-10 w-24 h-24 bg-orange-50 rounded-full blur-xl pointer-events-none"></div>
-                 <label className="block text-xs text-orange-600 font-bold mb-3 ml-1 uppercase tracking-widest relative z-10">Select Market Zip Code</label>
-                 <AsyncSelect
-                    cacheOptions
-                    loadOptions={debouncedLoadOptions}
-                    defaultOptions={false}
-                    value={selectedZip}
-                    onChange={(opt) => setSelectedZip(opt)}
-                    placeholder="Type at least 2 digits to search..."
-                    isClearable
-                    noOptionsMessage={({ inputValue }) =>
-                      !inputValue || inputValue.length < 2
-                        ? "Type at least 2 digits"
-                        : "No matching zip codes"
-                    }
-                    className="w-full relative z-20"
-                    classNamePrefix="react-select"
-                    components={{ MenuList: VirtualizedMenuList }}
-                    styles={{
-                      control: (base) => ({ 
-                        ...base, 
-                        backgroundColor: '#f8fafc', 
-                        borderColor: '#e2e8f0',
-                        minHeight: '44px',
-                        boxShadow: 'none',
-                        '&:hover': { borderColor: '#f97316' }
-                      }),
-                      menu: (base) => ({ ...base, zIndex: 50 }),
-                      option: (base, { isFocused, isSelected }) => ({
-                        ...base,
-                        backgroundColor: isSelected ? '#f97316' : isFocused ? '#fed7aa' : 'white',
-                        color: isSelected ? 'white' : 'black',
-                      })
-                    }}
-                 />
-               </div>
-            )}
-
-            {/* Question Input & Analyze Button */}
-            <div className="bg-indigo-50/80 border border-orange-200/80 rounded-2xl p-6 flex-grow flex flex-col shadow-sm relative overflow-hidden">
-              <div className="absolute bottom-0 right-0 w-32 h-32 bg-orange-50/50 rounded-tl-full pointer-events-none"></div>
-              
-              <div className="flex justify-between items-center mb-4 relative z-10">
-                 <label className="block text-xs text-slate-400 font-bold uppercase tracking-widest">Analysis Directive</label>
-                 <span className={`text-[10px] uppercase font-bold ${limitReached ? 'text-red-500' : 'text-orange-500'}`}>
-                    {limitReached ? 'Monthly Limit Reached' : `${usageCount} / ${monthlyLimit} Analyses Used`}
-                 </span>
-              </div>
-              
-              <textarea 
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder="E.g., Compare this property to market trends, analyze investment potential vs local cap rates..."
-                className="w-full flex-grow min-h-[150px] bg-purple-50/60 border border-indigo-200/50 rounded-xl p-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all resize-none mb-6 relative z-10"
-              />
-
-              <button 
-                onClick={handleAnalyze}
-                disabled={!isFormValid || processing}
-                className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-widest shadow-lg transition-all relative z-10 ${
-                  isFormValid 
-                    ? 'bg-orange-500 text-white hover:bg-orange-600 hover:scale-[1.01] hover:shadow-orange-500/30' 
-                    : 'bg-amber-50/40 text-slate-400 cursor-not-allowed border border-indigo-200/50'
-                }`}
-              >
-                {limitReached 
-                  ? 'Limit Reached - Upgrade Plan' 
-                  : processing 
-                    ? 'Processing...' 
-                    : 'Generate Intelligence Report'
-                }
-              </button>
-            </div>
-
-            {/* Placeholder Report Area */}
-            <div className="border border-indigo-200/50 rounded-2xl p-8 bg-amber-50/40">
-               <div className="flex items-center gap-2 mb-6 opacity-40">
-                  <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Report Preview Area</span>
-               </div>
-               <div className="space-y-4 opacity-10">
-                  <div className="h-4 bg-slate-900 rounded w-3/4"></div>
-                  <div className="h-4 bg-slate-900 rounded w-1/2"></div>
-                  <div className="h-4 bg-slate-900 rounded w-full"></div>
-               </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -1258,6 +1062,119 @@ export const MarketAlphaDashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* --- Engine Selection Modal (Mobile) --- */}
+      {isEngineModalOpen && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-fade-in-up">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+              <h3 className="text-lg font-black uppercase tracking-tight">Select Analysis Engine</h3>
+              <button onClick={() => setIsEngineModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="p-4 grid gap-3">
+              {ENGINE_OPTIONS.map((engine) => (
+                <button
+                  key={engine.id}
+                  onClick={() => { setAgentMode(engine.id); setIsEngineModalOpen(false); }}
+                  className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                    agentMode === engine.id ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 'bg-white border-slate-100 text-slate-600 hover:border-indigo-200'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${agentMode === engine.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={engine.icon} /></svg>
+                  </div>
+                  <span className="font-bold uppercase text-sm tracking-widest">{engine.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Confirmation Modal --- */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[110] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-fade-in border border-indigo-100">
+            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-indigo-50/30">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-1">Confirm Intelligence Directive</h3>
+                <p className="text-xs text-indigo-600 font-bold uppercase tracking-widest">Verify analysis parameters before execution</p>
+              </div>
+              <button onClick={() => setShowConfirmModal(false)} className="w-10 h-10 rounded-full hover:bg-white flex items-center justify-center text-slate-400 transition-colors">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="p-8 max-h-[60vh] overflow-y-auto space-y-8">
+               <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Context</h4>
+                    <div className="space-y-3">
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-medium">Zip Code</span>
+                          <span className="font-bold text-slate-900">{selectedZip?.label}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-medium">Engine</span>
+                          <span className="px-3 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-full uppercase">{agentMode}</span>
+                       </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Specs</h4>
+                    <div className="space-y-3">
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-medium">SqFt Range</span>
+                          <span className="font-bold text-slate-900">{propertySpecs.min_sqft || '0'} - {propertySpecs.max_sqft || 'Max'}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-medium">Beds</span>
+                          <span className="font-bold text-slate-900">{propertySpecs.beds}</span>
+                       </div>
+                    </div>
+                  </div>
+               </div>
+
+               <div className="space-y-4">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Intent Parameters</h4>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-3 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                     {Object.entries(agentMode === 'buying' ? buyingParams : agentMode === 'listing' ? listingParams : agentMode === 'investor' ? investorParams : flipperParams).map(([key, val]) => (
+                        <div key={key} className="flex justify-between items-center text-sm">
+                           <span className="text-slate-500 capitalize">{key.replace('_', ' ')}</span>
+                           <span className="font-bold text-slate-900">{val || 'N/A'}</span>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+
+               <div className="space-y-4">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Directive</h4>
+                  <p className="text-sm text-slate-600 italic bg-amber-50/50 p-4 rounded-2xl border border-amber-100/50 leading-relaxed">
+                    "{question}"
+                  </p>
+               </div>
+            </div>
+
+            <div className="p-8 bg-slate-50/50 border-t border-slate-50 flex gap-4">
+               <button 
+                 onClick={() => setShowConfirmModal(false)}
+                 className="flex-1 py-4 bg-white border-2 border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all"
+               >
+                 Cancel
+               </button>
+               <button 
+                 onClick={handleAnalyze}
+                 className="flex-1 py-4 bg-indigo-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:scale-[1.02] transition-all"
+               >
+                 Confirm & Execute
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showIntro && <DashboardIntroOverlay onClose={() => setShowIntro(false)} />}
     </div>
   );
