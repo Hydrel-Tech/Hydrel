@@ -1,10 +1,24 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export const HyperPersonalizedOutboundSystem: React.FC = () => {
   return (
     <div className="bg-[#f6f9fc] dark:bg-slate-900 min-h-screen pt-24 pb-20 transition-colors duration-300">
-      <div className="bg-emerald-900 dark:bg-emerald-950 text-white relative overflow-hidden -mt-24 pt-40 pb-24 mb-16 transition-colors duration-300">
+      {/* Home Navigation */}
+      <div className="max-w-4xl mx-auto px-6 mb-8">
+        <Link 
+          to="/" 
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm group"
+        >
+          <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Home
+        </Link>
+      </div>
+
+      <div className="bg-emerald-900 dark:bg-emerald-950 text-white relative overflow-hidden -mt-8 pt-40 pb-24 mb-16 transition-colors duration-300">
          <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-0 w-full h-full transform skew-y-[-3deg] origin-top-left bg-emerald-800 dark:bg-emerald-900 translate-y-[-10%] opacity-30 transition-colors duration-300"></div>
           <div className="absolute bottom-0 right-0 w-2/3 h-full bg-gradient-to-tl from-teal-500/20 to-emerald-600/20 blur-3xl rounded-full"></div>
