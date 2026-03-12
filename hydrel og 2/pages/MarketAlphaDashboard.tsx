@@ -38,6 +38,13 @@ const SHARED_DROPDOWNS = [
   { id: 'sort', label: 'Sort By', options: ['Relevance', 'Price (Low to High)', 'Price (High to Low)', 'Newest First', 'Days on Market'] }
 ];
 
+const LISTING_CONDITION_DROPDOWNS = [
+  { id: 'kitchen_condition', label: 'Kitchen Condition', options: ['Run down', 'Average', 'Good', 'Newly renovated'] },
+  { id: 'bathroom_condition', label: 'Bathroom Condition', options: ['Run down', 'Average', 'Good', 'Newly renovated'] },
+  { id: 'garage_condition', label: 'Garage Condition', options: ['Run down', 'Average', 'Good', 'Newly renovated', 'N/A'] },
+  { id: 'overall_condition', label: 'Overall Condition', options: ['Run down', 'Average', 'Good', 'Newly renovated'] }
+];
+
 const ENGINE_OPTIONS: { id: AgentMode; label: string; icon: string }[] = [
   { id: 'listing', label: 'Listing Agent', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
   { id: 'buying', label: 'Buying Agent', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -154,6 +161,13 @@ export const MarketAlphaDashboard: React.FC = () => {
 
   const [listingParams, setListingParams] = useState({
     improvement_budget: ''
+  });
+
+  const [listingConditionParams, setListingConditionParams] = useState({
+    kitchen_condition: 'Average',
+    bathroom_condition: 'Average',
+    garage_condition: 'Average',
+    overall_condition: 'Average'
   });
 
   const [investorParams, setInvestorParams] = useState({
@@ -1049,6 +1063,24 @@ export const MarketAlphaDashboard: React.FC = () => {
                   </select>
                 </div>
               ))}
+
+              {agentMode === 'listing' && (
+                <div className="pt-4 space-y-5 border-t border-slate-100 dark:border-slate-700">
+                  <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Asset Condition Profile</h5>
+                  {LISTING_CONDITION_DROPDOWNS.map((field) => (
+                    <div key={field.id}>
+                      <label className="block text-[10px] text-slate-400 dark:text-slate-500 font-black mb-2 uppercase ml-1">{field.label}</label>
+                      <select 
+                        value={(listingConditionParams as any)[field.id]}
+                        onChange={(e) => setListingConditionParams({...listingConditionParams, [field.id]: e.target.value})}
+                        className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-indigo-500 transition-all appearance-none dark:text-white"
+                      >
+                        {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1056,31 +1088,31 @@ export const MarketAlphaDashboard: React.FC = () => {
 
       {/* --- Map Modal --- */}
       {isMapOpen && (
-        <div className="fixed inset-0 z-[100] bg-gradient-to-br from-indigo-50 via-purple-50/30 to-amber-50/20 flex flex-col animate-fade-in">
-          <div className="h-20 border-b border-indigo-200/50 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md shadow-sm">
+        <div className="fixed inset-0 z-[100] bg-gradient-to-br from-indigo-50 via-purple-50/30 to-amber-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex flex-col animate-fade-in transition-colors duration-300">
+          <div className="h-20 border-b border-indigo-200/50 dark:border-slate-700 flex items-center justify-between px-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm">
              <div className="flex items-center gap-4">
                {/* Back Button */}
                <button 
                  onClick={() => setIsMapOpen(false)}
-                 className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors"
+                 className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
                >
                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                  </svg>
                  <span className="text-sm font-bold">Back to Dashboard</span>
                </button>
-               <h2 className="text-xl font-bold text-slate-900 tracking-wider border-l border-indigo-200/50 pl-4 ml-2">REGIONAL SELECTION</h2>
+               <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-wider border-l border-indigo-200/50 dark:border-slate-700 pl-4 ml-2 uppercase">REGIONAL SELECTION</h2>
              </div>
 
-             <div className="hidden lg:flex items-center gap-4 bg-amber-50 px-4 py-2 rounded-full border border-amber-100 animate-pulse">
+             <div className="hidden lg:flex items-center gap-4 bg-amber-50 dark:bg-amber-900/30 px-4 py-2 rounded-full border border-amber-100 dark:border-amber-900/50 animate-pulse">
                 <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <p className="text-[11px] font-bold text-amber-700 uppercase tracking-tight">
+                <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-tight">
                   Map slow? Go to dashboard and come back – loads faster second time.
                 </p>
              </div>
              
              <div className="flex items-center gap-4">
-               <div className="px-4 py-2 bg-indigo-50 rounded-full text-xs font-bold text-indigo-500 border border-indigo-200/50">
+               <div className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-full text-xs font-bold text-indigo-500 dark:text-indigo-400 border border-indigo-200/50 dark:border-slate-700">
                   {selectedRegionIds.length} / {maxRegions} Selected
                </div>
              </div>
@@ -1090,8 +1122,8 @@ export const MarketAlphaDashboard: React.FC = () => {
              <div className="w-full max-w-6xl flex flex-col gap-6">
                 
                 {/* State List Section - MOVED TO TOP and MADE CLICKABLE */}
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-indigo-200/50 p-6">
-                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-indigo-50 pb-2">Click a region below to select</h3>
+                <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-sm border border-indigo-200/50 dark:border-slate-700 p-6">
+                   <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6 border-b border-indigo-50 dark:border-slate-700 pb-2">Click a region below to select</h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                       {(Object.keys(REGION_STATES) as Array<keyof typeof REGION_STATES>).map((region) => {
                          const isSelected = selectedRegionIds.includes(region);
@@ -1101,8 +1133,8 @@ export const MarketAlphaDashboard: React.FC = () => {
                               className="space-y-3 cursor-pointer hover:opacity-80 transition-all group"
                               onClick={() => toggleRegion(region)}
                             >
-                               <h4 className={`text-sm font-bold uppercase tracking-wide flex items-center gap-2 ${isSelected ? 'text-blue-600' : 'text-slate-800'}`}>
-                                  <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isSelected ? 'bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.6)]' : 'bg-slate-300'}`}></div>
+                               <h4 className={`text-sm font-bold uppercase tracking-wide flex items-center gap-2 ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                  <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isSelected ? 'bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.6)]' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
                                   {region}
                                </h4>
                                <div className="flex flex-wrap gap-2">
@@ -1112,8 +1144,8 @@ export const MarketAlphaDashboard: React.FC = () => {
                                         title={state.name}
                                         className={`px-2 py-1 rounded text-[10px] font-bold transition-all duration-300 border ${
                                            isSelected 
-                                           ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                                           : 'bg-slate-50 border-slate-100 text-slate-400 group-hover:border-slate-200'
+                                           ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300' 
+                                           : 'bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 group-hover:border-slate-200 dark:group-hover:border-slate-600'
                                         }`}
                                      >
                                         {state.abbr}
@@ -1127,7 +1159,7 @@ export const MarketAlphaDashboard: React.FC = () => {
                 </div>
 
                 {/* Map Section - MOVED BELOW and made non-clickable */}
-                <div className="relative pointer-events-none opacity-90 grayscale-[0.2]">
+                <div className="relative pointer-events-none opacity-90 grayscale-[0.2] rounded-2xl overflow-hidden border-2 border-white/50 dark:border-slate-700 shadow-2xl">
                    <USAmap 
                       selectedRegions={selectedRegionIds}
                       savedRegions={savedRegions}
@@ -1137,41 +1169,41 @@ export const MarketAlphaDashboard: React.FC = () => {
                 </div>
 
                 {/* Region Actions */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-4 bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-indigo-200/50 px-6">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-sm border border-indigo-200/50 dark:border-slate-700 px-6">
                    <div className="flex items-center gap-3 flex-grow sm:flex-grow-0">
                       <button 
                         onClick={handleSaveRegions}
                         disabled={processing || JSON.stringify(selectedRegionIds.sort()) === JSON.stringify(savedRegions.sort())}
-                        className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all text-sm shadow-lg shadow-emerald-500/10 min-w-[140px]"
+                        className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed transition-all text-sm shadow-lg shadow-emerald-500/10 min-w-[140px]"
                       >
                         {processing ? 'Saving...' : 'Save Regions'}
                       </button>
                       <button 
                         onClick={handleReset}
-                        className="px-8 py-3 bg-white text-slate-600 border border-slate-200 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm min-w-[140px]"
+                        className="px-8 py-3 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm min-w-[140px]"
                       >
                         Reset Changes
                       </button>
                    </div>
-                   <div className="h-8 w-px bg-indigo-100 hidden sm:block"></div>
+                   <div className="h-8 w-px bg-indigo-100 dark:bg-slate-700 hidden sm:block"></div>
                    <button 
                     onClick={() => setIsMapOpen(false)}
-                    className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all text-sm shadow-lg min-w-[140px]"
+                    className="px-8 py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-white transition-all text-sm shadow-lg min-w-[140px]"
                   >
                     Close Map
                   </button>
                 </div>
 
-                <div className="p-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-indigo-200/50 text-slate-500 flex items-start gap-4">
-                    <div className="p-2 bg-indigo-50 text-indigo-500 rounded-lg">
+                <div className="p-6 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-sm border border-indigo-200/50 dark:border-slate-700 text-slate-500 dark:text-slate-400 flex items-start gap-4">
+                    <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 rounded-lg">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
                     <div>
-                        <p className="font-bold text-slate-800 mb-1">Selection Guidance</p>
+                        <p className="font-bold text-slate-800 dark:text-slate-200 mb-1">Selection Guidance</p>
                         <p className="text-sm leading-relaxed">
                             Click any region name or its state group above to toggle selection. 
                             {hasAnalyzed 
-                            ? <span className="text-orange-600 font-bold ml-1">Note: Existing regions are locked due to prior analysis history. You may only add new regions if your plan allows.</span>
+                            ? <span className="text-orange-600 dark:text-orange-400 font-bold ml-1">Note: Existing regions are locked due to prior analysis history. You may only add new regions if your plan allows.</span>
                             : " You can freely change regions before clicking 'Save Regions'."
                             }
                         </p>
@@ -1185,10 +1217,10 @@ export const MarketAlphaDashboard: React.FC = () => {
       {/* --- Engine Selection Modal (Mobile) --- */}
       {isEngineModalOpen && (
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-fade-in-up">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="text-lg font-black uppercase tracking-tight">Select Analysis Engine</h3>
-              <button onClick={() => setIsEngineModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-fade-in-up border border-slate-100 dark:border-slate-700">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+              <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white">Select Analysis Engine</h3>
+              <button onClick={() => setIsEngineModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -1198,10 +1230,12 @@ export const MarketAlphaDashboard: React.FC = () => {
                   key={engine.id}
                   onClick={() => { setAgentMode(engine.id); setIsEngineModalOpen(false); }}
                   className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
-                    agentMode === engine.id ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 'bg-white border-slate-100 text-slate-600 hover:border-indigo-200'
+                    agentMode === engine.id 
+                      ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400' 
+                      : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-indigo-200 dark:hover:border-indigo-800'
                   }`}
                 >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${agentMode === engine.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${agentMode === engine.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'}`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={engine.icon} /></svg>
                   </div>
                   <span className="font-bold uppercase text-sm tracking-widest">{engine.label}</span>
@@ -1215,13 +1249,13 @@ export const MarketAlphaDashboard: React.FC = () => {
       {/* --- Confirmation Modal --- */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-[110] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-6">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-fade-in border border-indigo-100">
-            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-indigo-50/30">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-fade-in border border-indigo-100 dark:border-slate-700">
+            <div className="p-8 border-b border-slate-50 dark:border-slate-700 flex justify-between items-center bg-indigo-50/30 dark:bg-indigo-900/20">
               <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-1">Confirm Intelligence Directive</h3>
-                <p className="text-xs text-indigo-600 font-bold uppercase tracking-widest">Verify analysis parameters before execution</p>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-1">Confirm Intelligence Directive</h3>
+                <p className="text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest">Verify analysis parameters before execution</p>
               </div>
-              <button onClick={() => setShowConfirmModal(false)} className="w-10 h-10 rounded-full hover:bg-white flex items-center justify-center text-slate-400 transition-colors">
+              <button onClick={() => setShowConfirmModal(false)} className="w-10 h-10 rounded-full hover:bg-white dark:hover:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500 transition-colors">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -1229,57 +1263,57 @@ export const MarketAlphaDashboard: React.FC = () => {
             <div className="p-8 max-h-[60vh] overflow-y-auto space-y-8">
                <div className="grid grid-cols-2 gap-8">
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Context</h4>
+                    <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Context</h4>
                     <div className="space-y-3">
                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 font-medium">Zip Code</span>
-                          <span className="font-bold text-slate-900">{selectedZip?.label}</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Zip Code</span>
+                          <span className="font-bold text-slate-900 dark:text-white">{selectedZip?.label}</span>
                        </div>
                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 font-medium">Engine</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Engine</span>
                           <span className="px-3 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-full uppercase">{agentMode}</span>
                        </div>
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Specs</h4>
+                    <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Specs</h4>
                     <div className="space-y-3">
                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 font-medium">SqFt Range</span>
-                          <span className="font-bold text-slate-900">{propertySpecs.min_sqft || '0'} - {propertySpecs.max_sqft || 'Max'}</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">SqFt Range</span>
+                          <span className="font-bold text-slate-900 dark:text-white">{propertySpecs.min_sqft || '0'} - {propertySpecs.max_sqft || 'Max'}</span>
                        </div>
                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 font-medium">Beds</span>
-                          <span className="font-bold text-slate-900">{propertySpecs.beds}</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Beds</span>
+                          <span className="font-bold text-slate-900 dark:text-white">{propertySpecs.beds}</span>
                        </div>
                     </div>
                   </div>
                </div>
 
                <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Intent Parameters</h4>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-3 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                  <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Intent Parameters</h4>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-3 p-6 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700">
                      {Object.entries(agentMode === 'buying' ? buyingParams : agentMode === 'listing' ? listingParams : agentMode === 'investor' ? investorParams : flipperParams).map(([key, val]) => (
                         <div key={key} className="flex justify-between items-center text-sm">
-                           <span className="text-slate-500 capitalize">{key.replace('_', ' ')}</span>
-                           <span className="font-bold text-slate-900">{val || 'N/A'}</span>
+                           <span className="text-slate-500 dark:text-slate-400 capitalize">{key.replace('_', ' ')}</span>
+                           <span className="font-bold text-slate-900 dark:text-white">{val || 'N/A'}</span>
                         </div>
                      ))}
                   </div>
                </div>
 
                <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Directive</h4>
-                  <p className="text-sm text-slate-600 italic bg-amber-50/50 p-4 rounded-2xl border border-amber-100/50 leading-relaxed">
+                  <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Directive</h4>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 italic bg-amber-50/50 dark:bg-amber-900/20 p-4 rounded-2xl border border-amber-100/50 dark:border-amber-900/50 leading-relaxed">
                     "{question}"
                   </p>
                </div>
             </div>
 
-            <div className="p-8 bg-slate-50/50 border-t border-slate-50 flex gap-4">
+            <div className="p-8 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-50 dark:border-slate-700 flex gap-4">
                <button 
                  onClick={() => setShowConfirmModal(false)}
-                 className="flex-1 py-4 bg-white border-2 border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all"
+                 className="flex-1 py-4 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
                >
                  Cancel
                </button>
