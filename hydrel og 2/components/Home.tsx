@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Hero } from './Hero';
 import { ArchitecturesGrid } from './ArchitecturesGrid';
 import { FeaturedSystem } from './FeaturedSystem';
@@ -7,6 +8,20 @@ import { HowItWorks } from './HowItWorks';
 import { ContactSection } from './ContactSection';
 
 export const Home: React.FC = () => {
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (hash) {
+      const element = document.getElementById(hash.replace('#', ''));
+      if (element) {
+        // Delay slightly to ensure content is rendered
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [hash]);
+
   return (
     <div 
       className="bg-cover bg-center bg-fixed relative transition-colors duration-300"
