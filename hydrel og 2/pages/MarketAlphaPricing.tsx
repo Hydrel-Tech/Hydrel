@@ -111,11 +111,11 @@ export const MarketAlphaPricing: React.FC = () => {
 
 
   return (
-    <div className="bg-[#f6f9fc] min-h-screen pt-24 pb-20">
+    <div className="bg-[#f6f9fc] dark:bg-slate-900 min-h-screen pt-24 pb-20 transition-colors duration-300">
       {/* Header */}
-      <div className="bg-emerald-900 text-white relative overflow-hidden -mt-24 pt-40 pb-24 mb-16">
+      <div className="bg-emerald-900 dark:bg-emerald-950 text-white relative overflow-hidden -mt-24 pt-40 pb-24 mb-16 transition-colors duration-300">
          <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-0 w-full h-full transform skew-y-[-3deg] origin-top-left bg-emerald-800 translate-y-[-10%] opacity-30"></div>
+          <div className="absolute top-0 left-0 w-full h-full transform skew-y-[-3deg] origin-top-left bg-emerald-800 dark:bg-emerald-900 translate-y-[-10%] opacity-30 transition-colors duration-300"></div>
           <div className="absolute bottom-0 right-0 w-2/3 h-full bg-gradient-to-tl from-teal-500/20 to-emerald-600/20 blur-3xl rounded-full"></div>
         </div>
         
@@ -135,10 +135,10 @@ export const MarketAlphaPricing: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6">
         {/* Intro Animation Toggle */}
         <div className="mb-12 flex justify-center">
-           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-6">
+           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-6 transition-colors duration-300">
               <div className="flex flex-col">
-                 <span className="text-sm font-black text-slate-900 uppercase tracking-tight">System Experience</span>
-                 <span className="text-xs text-slate-500 font-medium">Show "WE ARE HERE" intro animation when entering dashboard</span>
+                 <span className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">System Experience</span>
+                 <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Show "WE ARE HERE" intro animation when entering dashboard</span>
               </div>
               <button 
                 onClick={() => {
@@ -147,7 +147,7 @@ export const MarketAlphaPricing: React.FC = () => {
                   location.reload(); 
                 }}
                 className={`w-14 h-8 rounded-full transition-all relative ${
-                  (localStorage.getItem('showIntroAnimation') !== 'false') ? 'bg-indigo-600' : 'bg-slate-200'
+                  (localStorage.getItem('showIntroAnimation') !== 'false') ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'
                 }`}
               >
                 <div className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-sm transition-all ${
@@ -158,7 +158,7 @@ export const MarketAlphaPricing: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="text-center py-20 text-slate-500">Loading subscription data...</div>
+          <div className="text-center py-20 text-slate-500 dark:text-slate-400">Loading subscription data...</div>
         ) : (
           <div className="grid lg:grid-cols-5 md:grid-cols-2 gap-4">
             {pricingTiers.map((tier, index) => {
@@ -179,25 +179,25 @@ export const MarketAlphaPricing: React.FC = () => {
                   key={index} 
                   className={`flex flex-col p-6 rounded-3xl border transition-all duration-300 ${
                     isLowerTier 
-                      ? 'bg-slate-100 border-slate-200 opacity-60' 
-                      : `shadow-sm hover:shadow-xl ${tier.color} border-slate-200`
+                      ? 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 opacity-60' 
+                      : `shadow-sm hover:shadow-xl ${tier.color} dark:bg-slate-800/80 border-slate-200 dark:border-slate-700`
                   }`}
                 >
                   <div className="mb-4">
-                    <h3 className={`text-lg font-bold ${tier.textColor} mb-2`}>{tier.name}</h3>
+                    <h3 className={`text-lg font-bold ${tier.textColor} dark:text-white mb-2 transition-colors duration-300`}>{tier.name}</h3>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-slate-900">{tier.price}</span>
-                      {tier.price !== '$0' && <span className="text-xs text-slate-500 font-bold uppercase">/mo</span>}
+                      <span className="text-3xl font-black text-slate-900 dark:text-white transition-colors duration-300">{tier.price}</span>
+                      {tier.price !== '$0' && <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase transition-colors duration-300">/mo</span>}
                     </div>
                     {tier.discount && (
-                      <span className="inline-block mt-2 text-[10px] font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full uppercase tracking-wide">
+                      <span className="inline-block mt-2 text-[10px] font-bold bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full uppercase tracking-wide transition-colors duration-300">
                         {tier.discount}
                       </span>
                     )}
                   </div>
 
                   <div className="flex-grow mb-8">
-                    <p className="text-sm text-slate-600 leading-relaxed">
+                    <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed transition-colors duration-300">
                       {tier.desc}
                     </p>
                   </div>
@@ -209,8 +209,8 @@ export const MarketAlphaPricing: React.FC = () => {
                       ${isCurrentTier 
                         ? 'bg-yellow-400 text-slate-900 hover:bg-yellow-300 shadow-yellow-400/20 scale-105 ring-2 ring-yellow-400 ring-offset-2' 
                         : isHigherTier
-                          ? 'bg-emerald-600 text-white hover:bg-emerald-700 hover:scale-[1.02] shadow-emerald-600/20'
-                          : 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                          ? 'bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 hover:scale-[1.02] shadow-emerald-600/20'
+                          : 'bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none'
                       }
                     `}
                   >
