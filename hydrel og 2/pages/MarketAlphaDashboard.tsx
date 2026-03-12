@@ -474,7 +474,7 @@ export const MarketAlphaDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans relative overflow-hidden">
       {/* Background Image Layer */}
-      <div className="fixed inset-0 z-0 opacity-[0.03] pointer-events-none">
+      <div className="fixed inset-0 z-0 opacity-[0.3] pointer-events-none">
         <img 
           src="/images/hero-bg.webp" 
           alt="" 
