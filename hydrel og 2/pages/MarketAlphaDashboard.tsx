@@ -472,8 +472,19 @@ export const MarketAlphaDashboard: React.FC = () => {
   const isFormValid = selectedRegionIds.length > 0 && selectedZip?.value && question.length > 0 && !limitReached;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans">
-      {/* --- Header --- */}
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans relative overflow-hidden">
+      {/* Background Image Layer */}
+      <div className="fixed inset-0 z-0 opacity-[0.03] pointer-events-none">
+        <img 
+          src="/images/hero-bg.webp" 
+          alt="" 
+          className="w-full h-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#f8fafc]/50 to-[#f8fafc]"></div>
+      </div>
+
+      <div className="relative z-10">
+        {/* --- Header --- */}
       <header className="bg-white/90 backdrop-blur-md border-b border-indigo-100 sticky top-0 z-40 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -1176,6 +1187,7 @@ export const MarketAlphaDashboard: React.FC = () => {
       )}
 
       {showIntro && <DashboardIntroOverlay onClose={() => setShowIntro(false)} />}
+      </div>
     </div>
   );
 };
