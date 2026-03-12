@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export const FeaturedSystem: React.FC = () => {
   return (
@@ -8,6 +9,19 @@ export const FeaturedSystem: React.FC = () => {
         {/* Background texture */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+        </div>
+
+        {/* 'Take Me to the System' Button - Absolute Bottom Right */}
+        <div className="absolute bottom-8 right-8 z-20">
+          <Link 
+            to="/market-alpha" 
+            className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl shadow-lg transition-all hover:-translate-y-1 group"
+          >
+            Take Me to the System
+            <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </Link>
         </div>
 
         <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
