@@ -43,29 +43,29 @@ const steps = [
 
 export const HowItWorks: React.FC = () => {
   return (
-    <div className="max-w-7xl mx-auto px-6">
+    <div className="max-w-7xl mx-auto px-6 transition-colors duration-300">
       <div className="text-center mb-20">
-        <h2 className="text-lg font-bold text-indigo-600 uppercase tracking-[0.2em] mb-4 [-webkit-text-stroke:1px_white]">Core Methodology</h2>
-        <h3 className="text-4xl font-bold text-slate-900 mb-6">Built for clarity and performance</h3>
-        <p className="text-xl text-white max-w-2xl mx-auto [-webkit-text-stroke:1px_white]">
+        <h2 className="text-lg font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em] mb-4 [-webkit-text-stroke:1px_white] dark:[-webkit-text-stroke:1px_rgba(255,255,255,0.2)]">Core Methodology</h2>
+        <h3 className="text-4xl font-bold text-slate-900 dark:text-white mb-6 transition-colors duration-300">Built for clarity and performance</h3>
+        <p className="text-xl text-white dark:text-slate-300 max-w-2xl mx-auto [-webkit-text-stroke:1px_white] dark:[-webkit-text-stroke:0px] transition-colors duration-300">
           Our systems follow a rigid methodology to ensure every unit of intelligence is verified and executable.
         </p>
       </div>
 
       <div className="relative">
         {/* Connection line */}
-        <div className="hidden lg:block absolute top-12 left-[12%] right-[12%] h-px bg-slate-200"></div>
+        <div className="hidden lg:block absolute top-12 left-[12%] right-[12%] h-px bg-slate-200 dark:bg-slate-700 transition-colors duration-300"></div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           {steps.map((step, i) => (
             <div key={i} className="relative flex flex-col items-center text-center">
-              <div className="relative z-10 w-24 h-24 rounded-full bg-white border-2 border-slate-100 flex items-center justify-center mb-8 shadow-sm group hover:border-indigo-500 transition-colors">
-                <div className="text-indigo-600">
+              <div className="relative z-10 w-24 h-24 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 flex items-center justify-center mb-8 shadow-sm group hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors duration-300">
+                <div className="text-indigo-600 dark:text-indigo-400 transition-colors duration-300">
                   {step.icon}
                 </div>
               </div>
-              <h4 className="text-xl font-bold text-slate-900 mb-4">{step.title}</h4>
-              <p className="text-white text-lg leading-relaxed px-4 [-webkit-text-stroke:1px_white]">{step.desc}</p>
+              <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-4 transition-colors duration-300">{step.title}</h4>
+              <p className="text-white dark:text-slate-400 text-lg leading-relaxed px-4 [-webkit-text-stroke:1px_white] dark:[-webkit-text-stroke:0px] transition-colors duration-300">{step.desc}</p>
             </div>
           ))}
         </div>
