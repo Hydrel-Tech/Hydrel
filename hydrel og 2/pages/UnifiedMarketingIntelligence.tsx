@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LoginModal } from '../components/LoginModal';
 
@@ -10,11 +10,7 @@ export const UnifiedMarketingIntelligence: React.FC = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const handleGetSystem = () => {
-    if (user) {
-      navigate('/market-alpha/pricing');
-    } else {
-      setIsLoginOpen(true);
-    }
+    alert("This system architecture is currently undergoing final validation. Pricing and access will be available upon official release.");
   };
 
   return (
