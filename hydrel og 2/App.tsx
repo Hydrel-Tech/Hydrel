@@ -24,8 +24,8 @@ const FirstVisitRedirect: React.FC = () => {
   
   useEffect(() => {
     const hasSeenIntro = localStorage.getItem('hasSeenIntro');
-    // Only redirect to intro if we are on the root or home page and haven't seen intro yet
-    if (!hasSeenIntro && (location.pathname === '/' || location.pathname === '/market-alpha')) {
+    // Only redirect to intro if we haven't seen it yet and we are on the root path
+    if (!hasSeenIntro && location.pathname === '/') {
       localStorage.setItem('hasSeenIntro', 'true');
       navigate('/intro');
     }
@@ -71,9 +71,9 @@ const App: React.FC = () => {
               <Route path="/market-alpha" element={<MarketAlpha />} />
               <Route path="/market-alpha/pricing" element={<MarketAlphaPricing />} />
               <Route path="/market-alpha/dashboard" element={<MarketAlphaDashboard />} />
-              <Route path="/HyperPersonalizedOutboundSystem" element={<HyperPersonalizedOutboundSystem />} />
-              <Route path="/UnifiedMarketingIntelligence" element={<UnifiedMarketingIntelligence />} />
-              <Route path="/NicheCommercialDataMining" element={<NicheCommercialDataMining />} />
+              <Route path="/hyper-personalized-outbound-system" element={<HyperPersonalizedOutboundSystem />} />
+              <Route path="/unified-marketing-intelligence" element={<UnifiedMarketingIntelligence />} />
+              <Route path="/niche-commercial-data-mining" element={<NicheCommercialDataMining />} />
               <Route path="/signup" element={<Signup />} />
             </Routes>
           </main>
