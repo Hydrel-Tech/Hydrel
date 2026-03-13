@@ -11,19 +11,6 @@ export const FeaturedSystem: React.FC = () => {
           <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
         </div>
 
-        {/* 'Take Me to the System' Button - Absolute Bottom Right */}
-        <div className="absolute bottom-8 right-8 z-20">
-          <Link 
-            to="/market-alpha" 
-            className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl shadow-lg transition-all hover:-translate-y-1 group"
-          >
-            Take Me to the System
-            <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </Link>
-        </div>
-
         <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <div className="inline-block px-4 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/30 text-xs font-bold uppercase tracking-widest mb-8">
@@ -56,6 +43,19 @@ export const FeaturedSystem: React.FC = () => {
               <p className="text-sm text-indigo-200">
                 This architecture is active for selected partners. Other systems are currently in development phase.
               </p>
+            </div>
+
+            {/* Mobile: position it under the current focus section (the detailed log area), separate and not overlaying anything */}
+            <div className="lg:hidden mt-10 flex justify-center">
+              <Link 
+                to="/market-alpha" 
+                className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-2xl shadow-xl transition-all group"
+              >
+                Take Me to the System
+                <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
             </div>
           </div>
 
@@ -102,6 +102,19 @@ export const FeaturedSystem: React.FC = () => {
                   <span>14ms</span>
                 </div>
               </div>
+            </div>
+
+            {/* Desktop: center it below the "proprietary valuation index / risk calculation level / market sentiment drift" graph (the little graph area) */}
+            <div className="hidden lg:flex justify-center mt-8">
+              <Link 
+                to="/market-alpha" 
+                className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-2xl shadow-xl transition-all hover:-translate-y-1 group"
+              >
+                Take Me to the System
+                <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
             </div>
             
             {/* Decorative floaters */}
