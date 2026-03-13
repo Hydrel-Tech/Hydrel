@@ -14,26 +14,28 @@ interface PropertySpecs {
   min_sqft: string;
   max_sqft: string;
   beds: string;
+  bathrooms: string;
   status: string;
   sort: string;
 }
 
 const BUYER_DROPDOWNS = [
-  { id: 'focus', label: 'Analysis Focus', options: ['Making an Offer', 'Investment Analysis', 'Comparison Shopping', 'Risk Assessment', 'Long-term Value'] },
-  { id: 'concerns', label: 'Specific Concerns', options: ['School Quality', 'Flood Risk', 'Noise/Traffic', 'Future Resale', 'Renovation Needs', 'HOA Issues', 'Crime/Safety'] },
-  { id: 'horizon', label: 'Investment Horizon', options: ['Short-term (<3 yrs)', 'Medium (3-7 yrs)', 'Long-term (7+ yrs)'] },
-  { id: 'posture', label: 'Negotiation Posture', options: ['Aggressive – Lowest Possible', 'Balanced – Fair Market', 'Competitive – Must Win', 'Cautious – Risk Averse'] }
+  { id: 'focus', label: 'Analysis Focus', options: ['Making an Offer', 'Investment Analysis', 'Comparison Shopping', 'Risk Assessment', 'Long-term Value'], required: true },
+  { id: 'concerns', label: 'Specific Concerns', options: ['School Quality', 'Flood Risk', 'Noise/Traffic', 'Future Resale', 'Renovation Needs', 'HOA Issues', 'Crime/Safety'], required: true },
+  { id: 'horizon', label: 'Investment Horizon', options: ['Short-term (<3 yrs)', 'Medium (3-7 yrs)', 'Long-term (7+ yrs)'], required: true },
+  { id: 'posture', label: 'Negotiation Posture', options: ['Aggressive – Lowest Possible', 'Balanced – Fair Market', 'Competitive – Must Win', 'Cautious – Risk Averse'], required: true }
 ];
 
 const LISTING_DROPDOWNS = [
-  { id: 'goal', label: 'Listing Goal', options: ['Price Optimization', 'Fast Sale', 'Premium Positioning', 'Competitive Edge', 'Investor Targeting', 'Maximize Prize'] },
-  { id: 'timeline', label: 'Seller Timeline', options: ['Immediate (<30 days)', 'Flexible (30-60 days)', 'Patient (60+ days)'] },
-  { id: 'target', label: 'Target Buyer', options: ['First-Time Buyers', 'Families', 'Empty Nesters', 'Investors', 'Luxury Buyers', 'No Preference'] },
-  { id: 'stance', label: 'Competitive Stance', options: ['Price Leader (Below Market)', 'Market Matched', 'Premium Positioned', 'Luxury Niche'] }
+  { id: 'goal', label: 'Listing Goal', options: ['Price Optimization', 'Fast Sale', 'Premium Positioning', 'Competitive Edge', 'Investor Targeting', 'Maximize Prize'], required: true },
+  { id: 'timeline', label: 'Seller Timeline', options: ['Immediate (<30 days)', 'Flexible (30-60 days)', 'Patient (60+ days)'], required: true },
+  { id: 'target', label: 'Target Buyer', options: ['First-Time Buyers', 'Families', 'Empty Nesters', 'Investors', 'Luxury Buyers', 'No Preference'], required: true },
+  { id: 'stance', label: 'Competitive Stance', options: ['Price Leader (Below Market)', 'Market Matched', 'Premium Positioned', 'Luxury Niche'], required: true }
 ];
 
 const SHARED_DROPDOWNS = [
   { id: 'beds', label: 'Bedrooms', options: ['Any', '1+', '2+', '3+', '4+', '5+'] },
+  { id: 'bathrooms', label: 'Bathrooms', options: ['Any', '1+', '2+', '3+', '4+', '5+'] },
   { id: 'status', label: 'Status', options: ['Active Only', 'Active + Pending', 'All (Include Sold)'] },
   { id: 'sort', label: 'Sort By', options: ['Relevance', 'Price (Low to High)', 'Price (High to Low)', 'Newest First', 'Days on Market'] }
 ];
@@ -146,6 +148,7 @@ export const MarketAlphaDashboard: React.FC = () => {
     min_sqft: '',
     max_sqft: '',
     beds: 'Any',
+    bathrooms: 'Any',
     status: 'Active Only',
     sort: 'Relevance'
   });
@@ -153,6 +156,8 @@ export const MarketAlphaDashboard: React.FC = () => {
   // Engine specific params
   const [buyingParams, setBuyingParams] = useState({
     budget: '',
+    min_price: '',
+    max_price: '',
     occupant_count: '',
     school_distance: '',
     bedrooms_preference: '',
@@ -176,11 +181,15 @@ export const MarketAlphaDashboard: React.FC = () => {
     holding_period: '',
     down_payment_percentage: '',
     max_purchase_price: '',
+    min_price: '',
+    max_price: '',
     preferred_financing: ''
   });
 
   const [flipperParams, setFlipperParams] = useState({
     purchase_price: '',
+    min_price: '',
+    max_price: '',
     renovation_budget: '',
     target_profit: '',
     target_profit_type: 'usd', // 'usd' or 'percentage'
@@ -467,12 +476,58 @@ export const MarketAlphaDashboard: React.FC = () => {
     );
   };
 
+  const validatePriceRange = (precise: string, min: string, max: string): boolean => {
+    const p = parseFloat(precise);
+    const mn = parseFloat(min);
+    const mx = parseFloat(max);
+    
+    if (isNaN(p) || (isNaN(mn) && isNaN(mx))) return true;
+    
+    if (!isNaN(mn) && !isNaN(mx)) {
+      if (mn > mx) return false; // Min cannot be greater than max
+      if (!isNaN(p) && (p < mn || p > mx)) return false; // Precise must be within range
+    } else if (!isNaN(mn)) {
+      if (!isNaN(p) && p < mn) return false;
+    } else if (!isNaN(mx)) {
+      if (!isNaN(p) && p > mx) return false;
+    }
+    
+    return true;
+  };
+
   const handleAnalyze = async () => {
     if (!user || processing) return;
+
+    // Validate multi-select required parameters
+    const dropdowns = agentMode === 'buying' ? BUYER_DROPDOWNS : agentMode === 'listing' ? LISTING_DROPDOWNS : [];
+    const missingParams = dropdowns.filter(d => d.required && (selectedParams[d.id] || []).length === 0);
+    
+    if (missingParams.length > 0) {
+      alert("Please fill all required parameters.");
+      return;
+    }
 
     if (!selectedZip || !selectedZip.value) {
       alert('Please select a valid zip code from the list.');
       return;
+    }
+
+    // Price range validation
+    if (agentMode === 'flipper') {
+      if (!validatePriceRange(flipperParams.purchase_price, flipperParams.min_price, flipperParams.max_price)) {
+        alert("Invalid price configuration: Ensure min price < max price and the precise purchase price lies within that range.");
+        return;
+      }
+    } else if (agentMode === 'investor') {
+      if (investorParams.min_price && investorParams.max_price && parseFloat(investorParams.min_price) > parseFloat(investorParams.max_price)) {
+        alert("Invalid price range: Min price cannot exceed max price.");
+        return;
+      }
+    } else if (agentMode === 'buying') {
+      if (!validatePriceRange(buyingParams.budget, buyingParams.min_price, buyingParams.max_price)) {
+        alert("Invalid price configuration: Ensure min price < max price and the budget lies within that range.");
+        return;
+      }
     }
 
     // Trigger confirmation modal if enabled
@@ -562,40 +617,44 @@ export const MarketAlphaDashboard: React.FC = () => {
              <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase hidden sm:block">Intelligence Console</span>
           </div>
           
-          <div className="flex items-center gap-4 md:gap-8">
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 text-slate-400 hover:text-indigo-500 transition-colors rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-              title="Toggle Dark Mode"
-            >
-              {isDarkMode ? (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-              ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-              )}
-            </button>
-            <Link 
-              to="/"
-              className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-xs font-bold text-slate-600 dark:text-slate-300 transition-all border border-slate-200 dark:border-slate-700"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <span className="hidden sm:inline">Home</span>
-            </Link>
-            <button 
-              onClick={() => navigate('/market-alpha/pricing')}
-              className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800 transition-all shadow-sm"
-            >
-              Plans
-            </button>
-            <div className="text-right hidden lg:block">
-              <p className="text-[9px] text-slate-400 font-black tracking-widest uppercase mb-0.5">Operator</p>
-              <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[150px]">{user?.email}</p>
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-8">
+            <div className="flex items-center gap-4">
+               <button
+                onClick={toggleDarkMode}
+                className="p-2 text-slate-400 hover:text-indigo-500 transition-colors rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                title="Toggle Dark Mode"
+              >
+                {isDarkMode ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                )}
+              </button>
+              <Link 
+                to="/"
+                className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-xs font-bold text-slate-600 dark:text-slate-300 transition-all border border-slate-200 dark:border-slate-700"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span className="hidden sm:inline">Home</span>
+              </Link>
             </div>
-             <button onClick={() => signOut()} className="p-2 text-slate-400 hover:text-red-500 transition-colors bg-slate-50 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg border border-slate-200 dark:border-slate-700">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-            </button>
+            <div className="flex items-center gap-4">
+               <button 
+                onClick={() => navigate('/market-alpha/pricing')}
+                className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800 transition-all shadow-sm"
+              >
+                Plans
+              </button>
+              <div className="text-right hidden lg:block">
+                <p className="text-[9px] text-slate-400 font-black tracking-widest uppercase mb-0.5">Operator</p>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[150px]">{user?.email}</p>
+              </div>
+               <button onClick={() => signOut()} className="p-2 text-slate-400 hover:text-red-500 transition-colors bg-slate-50 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg border border-slate-200 dark:border-slate-700">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -744,8 +803,8 @@ export const MarketAlphaDashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* Placeholder Report Area */}
-            <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-8 bg-slate-50/50 dark:bg-slate-800/50">
+            {/* Synthetic Intelligence Output Feed Area */}
+            <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-8 bg-slate-50/50 dark:bg-slate-800/50 relative">
                <div className="flex items-center gap-2 mb-6 opacity-40">
                   <div className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500"></div>
                   <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Synthetic Intelligence Output Feed</span>
@@ -754,6 +813,19 @@ export const MarketAlphaDashboard: React.FC = () => {
                   <div className="h-3 bg-slate-900 dark:bg-white rounded-full w-3/4"></div>
                   <div className="h-3 bg-slate-900 dark:bg-white rounded-full w-1/2"></div>
                   <div className="h-3 bg-slate-900 dark:bg-white rounded-full w-full"></div>
+               </div>
+
+               {/* Mobile: Under Focus Section Position */}
+               <div className="lg:hidden mt-8 flex justify-center">
+                  <Link
+                    to="/market-alpha"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl shadow-lg transition-all group"
+                  >
+                    Take me to the system
+                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
                </div>
             </div>
           </div>
@@ -798,6 +870,25 @@ export const MarketAlphaDashboard: React.FC = () => {
                <div className="space-y-5">
                   {agentMode === 'buying' && (
                     <>
+                      <div className="space-y-4">
+                        <label className="block text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase ml-1">Price Range ($)</label>
+                        <div className="grid grid-cols-2 gap-4">
+                          <input 
+                            type="number" 
+                            value={buyingParams.min_price}
+                            onChange={(e) => setBuyingParams({...buyingParams, min_price: e.target.value})}
+                            placeholder="Min Price" 
+                            className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all dark:text-white" 
+                          />
+                          <input 
+                            type="number" 
+                            value={buyingParams.max_price}
+                            onChange={(e) => setBuyingParams({...buyingParams, max_price: e.target.value})}
+                            placeholder="Max Price" 
+                            className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all dark:text-white" 
+                          />
+                        </div>
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] text-slate-400 dark:text-slate-500 font-black mb-2 uppercase ml-1">Budget ($)</label>
@@ -874,6 +965,25 @@ export const MarketAlphaDashboard: React.FC = () => {
 
                   {agentMode === 'investor' && (
                     <>
+                      <div className="space-y-4">
+                        <label className="block text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase ml-1">Price Range ($)</label>
+                        <div className="grid grid-cols-2 gap-4">
+                          <input 
+                            type="number" 
+                            value={investorParams.min_price}
+                            onChange={(e) => setInvestorParams({...investorParams, min_price: e.target.value})}
+                            placeholder="Min Price" 
+                            className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all dark:text-white" 
+                          />
+                          <input 
+                            type="number" 
+                            value={investorParams.max_price}
+                            onChange={(e) => setInvestorParams({...investorParams, max_price: e.target.value})}
+                            placeholder="Max Price" 
+                            className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all dark:text-white" 
+                          />
+                        </div>
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[10px] text-slate-400 dark:text-slate-500 font-black mb-2 uppercase ml-1">Target Cap Rate (%)</label>
@@ -953,9 +1063,28 @@ export const MarketAlphaDashboard: React.FC = () => {
 
                   {agentMode === 'flipper' && (
                     <>
+                      <div className="space-y-4">
+                        <label className="block text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase ml-1">Purchase Price Range ($)</label>
+                        <div className="grid grid-cols-2 gap-4">
+                          <input 
+                            type="number" 
+                            value={flipperParams.min_price}
+                            onChange={(e) => setFlipperParams({...flipperParams, min_price: e.target.value})}
+                            placeholder="Min Price" 
+                            className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all dark:text-white" 
+                          />
+                          <input 
+                            type="number" 
+                            value={flipperParams.max_price}
+                            onChange={(e) => setFlipperParams({...flipperParams, max_price: e.target.value})}
+                            placeholder="Max Price" 
+                            className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 focus:outline-none transition-all dark:text-white" 
+                          />
+                        </div>
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-[10px] text-slate-400 dark:text-slate-500 font-black mb-2 uppercase ml-1">Purchase Price ($)</label>
+                          <label className="block text-[10px] text-slate-400 dark:text-slate-500 font-black mb-2 uppercase ml-1">Precise Purchase Price ($)</label>
                           <input 
                             type="number" 
                             value={flipperParams.purchase_price}
@@ -1023,6 +1152,19 @@ export const MarketAlphaDashboard: React.FC = () => {
                     renderCheckboxGroup(field.label, field.id, field.options)
                   ))}
                </div>
+
+               {/* Desktop: "Take me to the system" Button Center Bottom of Parameters */}
+               <div className="hidden lg:flex justify-center pt-4">
+                  <Link
+                    to="/market-alpha"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl shadow-lg transition-all group"
+                  >
+                    Take me to the system
+                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
+               </div>
             </div>
             
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 space-y-5 shadow-sm">
@@ -1089,39 +1231,38 @@ export const MarketAlphaDashboard: React.FC = () => {
       {/* --- Map Modal --- */}
       {isMapOpen && (
         <div className="fixed inset-0 z-[100] bg-gradient-to-br from-indigo-50 via-purple-50/30 to-amber-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex flex-col animate-fade-in transition-colors duration-300">
-          <div className="h-20 border-b border-indigo-200/50 dark:border-slate-700 flex items-center justify-between px-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm">
-             <div className="flex items-center gap-4">
+          <div className="h-20 md:h-24 border-b border-indigo-200/50 dark:border-slate-700 flex items-center justify-between px-4 md:px-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm">
+             <div className="flex items-center gap-2 md:gap-4">
                {/* Back Button */}
                <button 
                  onClick={() => setIsMapOpen(false)}
-                 className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                 className="flex items-center gap-2 px-2 md:px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
                >
                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                  </svg>
-                 <span className="text-sm font-bold">Back to Dashboard</span>
+                 <span className="text-xs md:text-sm font-bold hidden sm:inline">Back</span>
                </button>
-               <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-wider border-l border-indigo-200/50 dark:border-slate-700 pl-4 ml-2 uppercase">REGIONAL SELECTION</h2>
+               <h2 className="text-sm md:text-xl font-bold text-slate-900 dark:text-white tracking-wider border-l border-indigo-200/50 dark:border-slate-700 pl-2 md:pl-4 ml-1 md:ml-2 uppercase truncate">Regional Selection</h2>
              </div>
 
-             <div className="hidden lg:flex items-center gap-4 bg-amber-50 dark:bg-amber-900/30 px-4 py-2 rounded-full border border-amber-100 dark:border-amber-900/50 animate-pulse">
-                <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-tight">
-                  Map slow? Go to dashboard and come back – loads faster second time.
-                </p>
-             </div>
-             
-             <div className="flex items-center gap-4">
-               <div className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-full text-xs font-bold text-indigo-500 dark:text-indigo-400 border border-indigo-200/50 dark:border-slate-700">
-                  {selectedRegionIds.length} / {maxRegions} Selected
-               </div>
+             <div className="flex items-center gap-2 md:gap-4">
+                <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/30 px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-amber-100 dark:border-amber-900/50 animate-pulse">
+                    <svg className="w-3 h-3 md:w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <p className="text-[9px] md:text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-tight">
+                        Map slow? Refresh dashboard – faster second time.
+                    </p>
+                </div>
+                <div className="hidden sm:block px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-full text-xs font-bold text-indigo-500 dark:text-indigo-400 border border-indigo-200/50 dark:border-slate-700">
+                    {selectedRegionIds.length} / {maxRegions} Selected
+                </div>
              </div>
           </div>
           
           <div className="flex-grow relative p-4 md:p-8 overflow-y-auto flex flex-col items-center">
              <div className="w-full max-w-6xl flex flex-col gap-6">
                 
-                {/* State List Section - MOVED TO TOP and MADE CLICKABLE */}
+                {/* State List Section - TOP and CLICKABLE */}
                 <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-sm border border-indigo-200/50 dark:border-slate-700 p-6">
                    <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6 border-b border-indigo-50 dark:border-slate-700 pb-2">Click a region below to select</h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -1158,7 +1299,7 @@ export const MarketAlphaDashboard: React.FC = () => {
                    </div>
                 </div>
 
-                {/* Map Section - MOVED BELOW and made non-clickable */}
+                {/* Map Section - non-clickable */}
                 <div className="relative pointer-events-none opacity-90 grayscale-[0.2] rounded-2xl overflow-hidden border-2 border-white/50 dark:border-slate-700 shadow-2xl">
                    <USAmap 
                       selectedRegions={selectedRegionIds}
@@ -1283,8 +1424,8 @@ export const MarketAlphaDashboard: React.FC = () => {
                           <span className="font-bold text-slate-900 dark:text-white">{propertySpecs.min_sqft || '0'} - {propertySpecs.max_sqft || 'Max'}</span>
                        </div>
                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 dark:text-slate-400 font-medium">Beds</span>
-                          <span className="font-bold text-slate-900 dark:text-white">{propertySpecs.beds}</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Beds/Baths</span>
+                          <span className="font-bold text-slate-900 dark:text-white">{propertySpecs.beds} / {propertySpecs.bathrooms}</span>
                        </div>
                     </div>
                   </div>
