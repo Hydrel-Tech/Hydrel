@@ -64,9 +64,9 @@ export const Footer: React.FC = () => {
             <h5 className="font-bold text-slate-900 dark:text-white text-sm mb-6 uppercase tracking-widest transition-colors duration-300">Architectures</h5>
             <ul className="space-y-4 text-sm text-slate-500 dark:text-slate-400">
               <li><Link to="/market-alpha" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Real Estate Analytics</Link></li>
-              <li><Link to="/HyperPersonalizedOutboundSystem" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Outbound Pipeline</Link></li>
-              <li><Link to="/UnifiedMarketingIntelligence" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Marketing Intelligence</Link></li>
-              <li><Link to="/NicheCommercialDataMining" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Commercial Data Mining</Link></li>
+              <li><Link to="/hyper-personalized-outbound-system" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Outbound Pipeline</Link></li>
+              <li><Link to="/unified-marketing-intelligence" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Marketing Intelligence</Link></li>
+              <li><Link to="/niche-commercial-data-mining" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Commercial Data Mining</Link></li>
             </ul>
           </div>
 
@@ -88,7 +88,7 @@ export const Footer: React.FC = () => {
           <div>
             <h5 className="font-bold text-slate-900 dark:text-white text-sm mb-6 uppercase tracking-widest transition-colors duration-300">Company</h5>
             <ul className="space-y-4 text-sm text-slate-500 dark:text-slate-400">
-              <li><a href="/#contact" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact</a></li>
+              <li><Link to="/#contact" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact</Link></li>
             </ul>
           </div>
         </div>
