@@ -805,30 +805,16 @@ export const MarketAlphaDashboard: React.FC = () => {
 
             {/* Synthetic Intelligence Output Feed Area */}
             <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-8 bg-slate-50/50 dark:bg-slate-800/50 relative">
-               <div className="flex items-center gap-2 mb-6 opacity-40">
-                  <div className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500"></div>
-                  <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Synthetic Intelligence Output Feed</span>
-               </div>
-               <div className="space-y-4 opacity-5">
-                  <div className="h-3 bg-slate-900 dark:bg-white rounded-full w-3/4"></div>
-                  <div className="h-3 bg-slate-900 dark:bg-white rounded-full w-1/2"></div>
-                  <div className="h-3 bg-slate-900 dark:bg-white rounded-full w-full"></div>
-               </div>
-
-               {/* Mobile: Under Focus Section Position */}
-               <div className="lg:hidden mt-8 flex justify-center">
-                  <Link
-                    to="/market-alpha"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl shadow-lg transition-all group"
-                  >
-                    Take me to the system
-                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </Link>
-               </div>
+            <div className="flex items-center gap-2 mb-6 opacity-40">
+               <div className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500"></div>
+               <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Synthetic Intelligence Output Feed</span>
             </div>
-          </div>
+            <div className="space-y-4 opacity-5">
+               <div className="h-3 bg-slate-900 dark:bg-white rounded-full w-3/4"></div>
+               <div className="h-3 bg-slate-900 dark:bg-white rounded-full w-1/2"></div>
+               <div className="h-3 bg-slate-900 dark:bg-white rounded-full w-full"></div>
+            </div>
+            </div>          </div>
 
           {/* Left Column (Controls) - ORDER: SECOND ON MOBILE, FIRST ON DESKTOP */}
           <div className="space-y-8 order-2 lg:order-1">
@@ -1151,19 +1137,6 @@ export const MarketAlphaDashboard: React.FC = () => {
                   {(agentMode === 'buying' ? BUYER_DROPDOWNS : agentMode === 'listing' ? LISTING_DROPDOWNS : []).map((field) => (
                     renderCheckboxGroup(field.label, field.id, field.options)
                   ))}
-               </div>
-
-               {/* Desktop: "Take me to the system" Button Center Bottom of Parameters */}
-               <div className="hidden lg:flex justify-center pt-4">
-                  <Link
-                    to="/market-alpha"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl shadow-lg transition-all group"
-                  >
-                    Take me to the system
-                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </Link>
                </div>
             </div>
             
