@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './components/Home';
@@ -16,7 +16,6 @@ import { UnifiedMarketingIntelligence } from './pages/UnifiedMarketingIntelligen
 import { NicheCommercialDataMining } from './pages/NicheCommercialDataMining';
 import { Signup } from './pages/Signup';
 import IntroPage from './pages/IntroPage';
-import { useNavigate, useLocation } from 'react-router-dom';
 
 const FirstVisitRedirect: React.FC = () => {
   const navigate = useNavigate();
@@ -34,7 +33,8 @@ const FirstVisitRedirect: React.FC = () => {
   return null;
 };
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -45,46 +45,39 @@ const App: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Determine if Navbar and Footer should be hidden
+  const hideLayout = ['/intro', '/signup', '/market-alpha/dashboard'].includes(location.pathname);
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {!hideLayout && <Navbar scrolled={scrolled} />}
+      
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/intro" element={<IntroPage />} />
+          <Route path="/market-alpha" element={<MarketAlpha />} />
+          <Route path="/market-alpha/pricing" element={<MarketAlphaPricing />} />
+          <Route path="/market-alpha/dashboard" element={<MarketAlphaDashboard />} />
+          <Route path="/hyper-personalized-outbound-system" element={<HyperPersonalizedOutboundSystem />} />
+          <Route path="/unified-marketing-intelligence" element={<UnifiedMarketingIntelligence />} />
+          <Route path="/niche-commercial-data-mining" element={<NicheCommercialDataMining />} />
+          <Route path="/signup" element={<Signup />} />
+        </Routes>
+      </main>
+
+      {!hideLayout && <Footer />}
+    </div>
+  );
+};
+
+const App: React.FC = () => {
   return (
     <AuthProvider>
       <Router>
         <ScrollToTop />
         <FirstVisitRedirect />
-        <div className="min-h-screen flex flex-col">
-          {/* Navbar is conditional inside Signup page if we wanted, but keeping it simple for now. 
-              The Signup page design in requirements seemed standalone (nested subpage), 
-              so we might conditionally render Navbar or let the Signup page cover it.
-              Based on the design, Signup page has its own back button, but Navbar is global.
-              We can hide Navbar on signup route if desired, but user didn't explicitly ask to hide it.
-          */}
-          <Routes>
-             <Route path="/intro" element={<></>} />
-             <Route path="/signup" element={<></>} />
-             <Route path="/market-alpha/dashboard" element={<></>} /> {/* Hide default navbar on dashboard */}
-             <Route path="*" element={<Navbar scrolled={scrolled} />} />
-          </Routes>
-          
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/intro" element={<IntroPage />} />
-              <Route path="/market-alpha" element={<MarketAlpha />} />
-              <Route path="/market-alpha/pricing" element={<MarketAlphaPricing />} />
-              <Route path="/market-alpha/dashboard" element={<MarketAlphaDashboard />} />
-              <Route path="/hyper-personalized-outbound-system" element={<HyperPersonalizedOutboundSystem />} />
-              <Route path="/unified-marketing-intelligence" element={<UnifiedMarketingIntelligence />} />
-              <Route path="/niche-commercial-data-mining" element={<NicheCommercialDataMining />} />
-              <Route path="/signup" element={<Signup />} />
-            </Routes>
-          </main>
-
-          <Routes>
-            <Route path="/intro" element={<></>} />
-            <Route path="/signup" element={<></>} />
-            <Route path="/market-alpha/dashboard" element={<></>} /> {/* Hide default footer on dashboard */}
-            <Route path="*" element={<Footer />} />
-          </Routes>
-        </div>
+        <AppContent />
       </Router>
     </AuthProvider>
   );
