@@ -8,9 +8,9 @@ export const ArchitecturesGrid: React.FC = () => {
   const getRoute = (id: string) => {
     switch (id) {
       case 'real-estate': return '/market-alpha';
-      case 'outbound': return '/HyperPersonalizedOutboundSystem';
-      case 'marketing': return '/UnifiedMarketingIntelligence';
-      case 'data-mining': return '/NicheCommercialDataMining';
+      case 'outbound': return '/hyper-personalized-outbound-system';
+      case 'marketing': return '/unified-marketing-intelligence';
+      case 'data-mining': return '/niche-commercial-data-mining';
       default: return '/';
     }
   };
