@@ -133,7 +133,7 @@ const VirtualizedMenuList = (props: any) => {
 };
 
 export const MarketAlphaDashboard: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showIntro, setShowIntro] = useState(false);
@@ -303,6 +303,9 @@ export const MarketAlphaDashboard: React.FC = () => {
   }, 300);
 
   useEffect(() => {
+    // Wait for auth to finish loading before checking for user
+    if (authLoading) return;
+
     if (!user) {
       navigate('/');
       return;
@@ -348,7 +351,7 @@ export const MarketAlphaDashboard: React.FC = () => {
     };
 
     fetchUserData();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const toggleRegion = (id: string) => {
     setSelectedRegionIds(prev => {
@@ -617,7 +620,7 @@ export const MarketAlphaDashboard: React.FC = () => {
              <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase hidden sm:block">Intelligence Console</span>
           </div>
           
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-8">
+          <div className="flex items-center gap-4 md:gap-8">
             <div className="flex items-center gap-4">
                <button
                 onClick={toggleDarkMode}
@@ -652,7 +655,7 @@ export const MarketAlphaDashboard: React.FC = () => {
                 <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[150px]">{user?.email}</p>
               </div>
                <button onClick={() => signOut()} className="p-2 text-slate-400 hover:text-red-500 transition-colors bg-slate-50 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg border border-slate-200 dark:border-slate-700">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
               </button>
             </div>
           </div>
