@@ -542,20 +542,112 @@ export const MarketAlphaDashboard: React.FC = () => {
     setProcessing(true);
     setShowConfirmModal(false);
 
-    // Prepare Payload
-    const intent_params = 
-      agentMode === 'buying' ? buyingParams :
-      agentMode === 'listing' ? listingParams :
-      agentMode === 'investor' ? investorParams :
-      flipperParams;
+    // --- Parameter Mapping & Routing ---
+    let engineName: 'buyer' | 'listing' | 'investor' | 'flipper' = 'buyer';
+    let engineParams: any = {};
 
-    // Add multi-selects to intent_params
-    const final_intent_params = {
-      ...intent_params,
-      ...selectedParams
-    };
+    if (agentMode === 'buying') {
+      engineName = 'buyer';
+      engineParams = {
+        zip_code: selectedZip.value,
+        min_price: Number(buyingParams.min_price) || null,
+        max_price: Number(buyingParams.max_price) || null,
+        min_sqft: Number(propertySpecs.min_sqft) || null,
+        max_sqft: Number(propertySpecs.max_sqft) || null,
+        bedrooms: propertySpecs.beds,
+        bathrooms: propertySpecs.bathrooms,
+        status: propertySpecs.status,
+        sort_by: propertySpecs.sort,
+        budget: Number(buyingParams.budget) || 0,
+        family_size: Number(buyingParams.occupant_count) || 0,
+        school_distance: Number(buyingParams.school_distance) || 0,
+        min_bedrooms: Number(buyingParams.bedrooms_preference) || 0,
+        safety_priority: buyingParams.safety_priority.charAt(0).toUpperCase() + buyingParams.safety_priority.slice(1),
+        analysis_focus: (selectedParams.focus || []).join(', '),
+        specific_concerns: selectedParams.concerns || [],
+        investment_horizon: (selectedParams.horizon || []).join(', '),
+        negotiation_posture: (selectedParams.posture || []).join(', '),
+        analysis_directive: question,
+        condition_preference: "Any",
+        garage: "Any"
+      };
+    } else if (agentMode === 'listing') {
+      engineName = 'listing';
+      engineParams = {
+        zip_code: selectedZip.value,
+        sqft: Number(propertySpecs.min_sqft) || 0,
+        bedrooms: Number(propertySpecs.beds.replace('+', '')) || 0,
+        bathrooms_full: Number(propertySpecs.bathrooms.replace('+', '')) || 0,
+        bathrooms_half: 0,
+        lot_size_sqft: null,
+        year_built: null,
+        seller_goal: (selectedParams.goal || []).join(', '),
+        improvement_budget: Number(listingParams.improvement_budget) || 0,
+        timeline: (selectedParams.timeline || []).join(', '),
+        target_buyer: (selectedParams.target || []).join(', '),
+        competitive_stance: (selectedParams.stance || []).join(', '),
+        kitchen_condition: listingConditionParams.kitchen_condition.toLowerCase(),
+        bathroom_condition: listingConditionParams.bathroom_condition.toLowerCase(),
+        garage_condition: listingConditionParams.garage_condition === 'N/A' ? 'NA' : listingConditionParams.garage_condition,
+        overall_condition: listingConditionParams.overall_condition.toLowerCase(),
+        analysis_directive: question
+      };
+    } else if (agentMode === 'investor') {
+      engineName = 'investor';
+      engineParams = {
+        zip_code: selectedZip.value,
+        min_price: Number(investorParams.min_price) || 0,
+        max_price: Number(investorParams.max_price) || 0,
+        min_sqft: Number(propertySpecs.min_sqft) || 0,
+        max_sqft: Number(propertySpecs.max_sqft) || 0,
+        bedrooms: propertySpecs.beds,
+        bathrooms: propertySpecs.bathrooms,
+        status: propertySpecs.status,
+        sort_by: propertySpecs.sort,
+        target_cap_rate: Number(investorParams.target_cap_rate) || 0,
+        risk_tolerance: investorParams.risk_tolerance.charAt(0).toUpperCase() + investorParams.risk_tolerance.slice(1),
+        holding_period: Number(investorParams.holding_period) || 0,
+        down_payment_percent: Number(investorParams.down_payment_percentage) || 0,
+        analysis_directive: question,
+        mortgage_rate: null,
+        garage: "Any"
+      };
+    } else if (agentMode === 'flipper') {
+      engineName = 'flipper';
+      engineParams = {
+        zip_code: selectedZip.value,
+        min_price: Number(flipperParams.min_price) || 0,
+        max_price: Number(flipperParams.max_price) || 0,
+        min_sqft: Number(propertySpecs.min_sqft) || 0,
+        max_sqft: Number(propertySpecs.max_sqft) || 0,
+        bedrooms: propertySpecs.beds,
+        bathrooms: propertySpecs.bathrooms,
+        status: propertySpecs.status,
+        sort_by: propertySpecs.sort,
+        purchase_price: Number(flipperParams.purchase_price) || 0,
+        renovation_budget: Number(flipperParams.renovation_budget) || 0,
+        target_profit: flipperParams.target_profit + (flipperParams.target_profit_type === 'percentage' ? '%' : ''),
+        holding_period: Number(flipperParams.holding_period) || 0,
+        analysis_directive: question,
+        condition_preference: "Needs Work",
+        garage: "Any"
+      };
+    }
 
     try {
+      // 1. Send parameters to the appropriate engine table
+      const { error: paramError } = await supabase
+        .from(`${engineName}_parameters`)
+        .insert([engineParams]);
+
+      if (paramError) console.error(`Error inserting into ${engineName}_parameters:`, paramError);
+
+      // 2. Prepare payload for the backend API (via user_analyses)
+      const payload = {
+        engine: engineName,
+        parameters: engineParams
+      };
+
       const { error } = await supabase
         .from('user_analyses')
         .insert([{ 
@@ -564,7 +656,7 @@ export const MarketAlphaDashboard: React.FC = () => {
           zip_code: selectedZip.value, 
           mode: agentMode,
           property_specs: propertySpecs,
-          intent_params: final_intent_params
+          intent_params: payload // This matches the expected backend JSON structure
         }]);
 
       if (!error) {
