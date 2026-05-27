@@ -22,7 +22,11 @@
     "@react-three/drei": "^9.105.0",
     "three": "^0.163.0",
     "framer-motion": "^12.40.0",
-    "@types/three": "^0.163.0"
+    "@types/three": "^0.163.0",
+    "gsap": "^3.12.5",
+    "@gsap/react": "^2.1.1",
+    "howler": "^2.2.4",
+    "@types/howler": "^2.2.11"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
