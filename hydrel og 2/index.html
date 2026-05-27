@@ -4,15 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hydrel Systems Architectures</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = {
-        darkMode: 'class',
-      }
+      tailwind.config = { darkMode: 'class' }
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Leaflet CSS — loaded here so it never fails on deployment -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
       body {
         font-family: 'Inter', sans-serif;
@@ -20,37 +34,114 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
+
+      /* ── Custom tech cursor ── */
+      * { cursor: none !important; }
+
+      #hydrel-cursor {
+        position: fixed;
+        top: 0; left: 0;
+        width: 20px; height: 20px;
+        pointer-events: none;
+        z-index: 99999;
+        transform: translate(-4px, -4px);
+        transition: transform 0.05s linear;
+      }
+
+      #hydrel-cursor-ring {
+        position: fixed;
+        top: 0; left: 0;
+        width: 36px; height: 36px;
+        border: 1.5px solid rgba(99,102,241,0.5);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 99998;
+        transform: translate(-18px, -18px);
+        transition: transform 0.12s ease-out, width 0.2s, height 0.2s, border-color 0.2s;
+      }
+
+      body.cursor-hover #hydrel-cursor-ring {
+        width: 52px; height: 52px;
+        transform: translate(-26px, -26px);
+        border-color: rgba(99,102,241,0.9);
+      }
+
+      /* ── Glass card ── */
       .glass-card {
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255,255,255,0.7);
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255,255,255,0.2);
       }
       .dark .glass-card {
-        background: rgba(30, 41, 59, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(30,41,59,0.7);
+        border: 1px solid rgba(255,255,255,0.1);
       }
-      .text-balance {
-        text-wrap: balance;
+
+      .text-balance { text-wrap: balance; }
+
+      /* ── Scrollbar ── */
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+      /* ── Fade animations used throughout ── */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
       }
-      /* Custom scrollbar for cleaner look */
-      ::-webkit-scrollbar {
-        width: 8px;
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0);    }
       }
-      ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #c7c7c7;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-      }
+      .animate-fade-in     { animation: fadeIn    0.5s ease forwards; }
+      .animate-fade-in-up  { animation: fadeInUp  0.4s ease forwards; }
     </style>
-<link rel="stylesheet" href="/index.css">
-</head>
+  </head>
+
   <body class="bg-[#f6f9fc] dark:bg-slate-900 text-[#424770] dark:text-slate-300 overflow-x-hidden transition-colors duration-300">
+
+    <!-- Custom cursor elements -->
+    <svg id="hydrel-cursor" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 1C5 0.447715 5.44772 0 6 0C6.55228 0 7 0.447715 7 1V9C7 9 7.5 8.5 8.5 8.5C9.5 8.5 10 9.2 10 9.2C10 9.2 10.6 8.7 11.5 8.7C12.3 8.7 12.9 9.3 12.9 9.3C12.9 9.3 13.4 9 14 9C14.8 9 15.5 9.7 15.5 10.5V13C15.5 15.5 13.5 17.5 11 17.5H8.5C7.1 17.5 5.9 16.7 5.3 15.5L3.2 11.6C2.9 11 3.1 10.3 3.7 10C4.3 9.7 5 9.9 5.3 10.5L5 9V1Z"
+        fill="#4338ca" stroke="#6366f1" stroke-width="0.5"/>
+    </svg>
+    <div id="hydrel-cursor-ring"></div>
+
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
-</body>
+
+    <script>
+      // Cursor movement
+      const cur = document.getElementById('hydrel-cursor');
+      const ring = document.getElementById('hydrel-cursor-ring');
+      let rx = 0, ry = 0, mx = 0, my = 0;
+
+      document.addEventListener('mousemove', e => {
+        mx = e.clientX; my = e.clientY;
+        cur.style.left = mx + 'px';
+        cur.style.top  = my + 'px';
+      });
+
+      (function lerp() {
+        rx += (mx - rx) * 0.1;
+        ry += (my - ry) * 0.1;
+        ring.style.left = rx + 'px';
+        ring.style.top  = ry + 'px';
+        requestAnimationFrame(lerp);
+      })();
+
+      // Hover state on interactive elements
+      document.addEventListener('mouseover', e => {
+        if (e.target.closest('button,a,input,select,textarea,[role="button"]')) {
+          document.body.classList.add('cursor-hover');
+        }
+      });
+      document.addEventListener('mouseout', e => {
+        if (e.target.closest('button,a,input,select,textarea,[role="button"]')) {
+          document.body.classList.remove('cursor-hover');
+        }
+      });
+    </script>
+  </body>
 </html>
