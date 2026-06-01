@@ -10,7 +10,7 @@ import { AuthProvider } from './context/AuthContext';
 // Pages
 import { MarketAlpha } from './pages/MarketAlpha';
 import { MarketAlphaPricing } from './pages/MarketAlphaPricing';
-import { MarketAlphaDashboard } from './pages/MarketAlphaDashboard';
+import { DashboardLayout } from './pages/DashboardLayout';
 import { HyperPersonalizedOutboundSystem } from './pages/HyperPersonalizedOutboundSystem';
 import { UnifiedMarketingIntelligence } from './pages/UnifiedMarketingIntelligence';
 import { NicheCommercialDataMining } from './pages/NicheCommercialDataMining';
@@ -58,7 +58,7 @@ const AppContent: React.FC = () => {
           <Route path="/intro" element={<IntroPage />} />
           <Route path="/market-alpha" element={<MarketAlpha />} />
           <Route path="/market-alpha/pricing" element={<MarketAlphaPricing />} />
-          <Route path="/market-alpha/dashboard" element={<MarketAlphaDashboard />} />
+          <Route path="/market-alpha/dashboard" element={<DashboardLayout />} />
           <Route path="/hyper-personalized-outbound-system" element={<HyperPersonalizedOutboundSystem />} />
           <Route path="/unified-marketing-intelligence" element={<UnifiedMarketingIntelligence />} />
           <Route path="/niche-commercial-data-mining" element={<NicheCommercialDataMining />} />
