@@ -20,12 +20,14 @@
     "@supabase/supabase-js": "2.39.8",
     "@react-three/fiber": "^8.16.0",
     "@react-three/drei": "^9.105.0",
+    "@react-three/csg": "^4.0.0",
     "three": "^0.163.0",
     "framer-motion": "^12.40.0",
     "@types/three": "^0.163.0",
     "gsap": "^3.12.5",
     "@gsap/react": "^2.1.1",
     "howler": "^2.2.4",
+    "maath": "^0.10.8",
     "@types/howler": "^2.2.11"
   },
   "devDependencies": {
