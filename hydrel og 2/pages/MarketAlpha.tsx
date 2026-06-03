@@ -1,4 +1,4 @@
-import React, { Suspense, useRef, useMemo, useState, useEffect } from 'react';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -185,43 +185,31 @@ export const MarketAlpha: React.FC = () => {
             </motion.div>
           </motion.div>
 
-          {/* RIGHT — R3F interactive deal scene */}
-          <div className="relative h-[420px] lg:h-[520px]">
-            {/* Glow blobs */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+        {/* RIGHT — Spline orbital scene */}
+<div className="relative h-[420px] lg:h-[520px] rounded-2xl overflow-hidden">
 
-            <Suspense
-              fallback={
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="w-10 h-10 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-                </div>
-              }
-            >
-              <Canvas
-                camera={{ position: [0, 1, 6.5], fov: 40 }}
-                style={{ background: 'transparent', width: '100%', height: '100%' }}
-                gl={{ alpha: true, antialias: true }}
-              >
-                <DealScene />
-              </Canvas>
-            </Suspense>
+  {/* Ambient glow blob (kept for depth) */}
+  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none z-0" />
 
-            {/* Interaction hint */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 2.5, duration: 1 }}
-              className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase text-emerald-400/50 pointer-events-none"
-            >
-              Drag to rotate
-            </motion.p>
+  {/* Spline scene — fills the entire container */}
+  <SplineMarketScene />
 
-            {/* Corner brackets */}
-            <div className="absolute top-4 right-4 w-7 h-7 border-t-2 border-r-2 border-emerald-400/25 pointer-events-none" />
-            <div className="absolute top-4 left-4 w-7 h-7 border-t-2 border-l-2 border-emerald-400/25 pointer-events-none" />
-            <div className="absolute bottom-4 right-4 w-7 h-7 border-b-2 border-r-2 border-emerald-400/25 pointer-events-none" />
-            <div className="absolute bottom-4 left-4 w-7 h-7 border-b-2 border-l-2 border-emerald-400/25 pointer-events-none" />
-          </div>
+  {/* Interaction hint */}
+  <motion.p
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay: 3, duration: 1 }}
+    className="absolute bottom-12 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-widest uppercase text-emerald-400/50 pointer-events-none z-30"
+  >
+    Touch to interact
+  </motion.p>
+
+  {/* Corner brackets */}
+  <div className="absolute top-4 right-4 w-7 h-7 border-t-2 border-r-2 border-emerald-400/25 pointer-events-none z-30" />
+  <div className="absolute top-4 left-4 w-7 h-7 border-t-2 border-l-2 border-emerald-400/25 pointer-events-none z-30" />
+  <div className="absolute bottom-4 right-4 w-7 h-7 border-b-2 border-r-2 border-emerald-400/25 pointer-events-none z-30" />
+  <div className="absolute bottom-4 left-4 w-7 h-7 border-b-2 border-l-2 border-emerald-400/25 pointer-events-none z-30" />
+</div>
         </div>
 
         {/* ── STAT STRIP ── */}
