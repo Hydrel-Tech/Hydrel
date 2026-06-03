@@ -1,11 +1,9 @@
 import React, { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import * as THREE from 'three';
 import { useAuth } from '../context/AuthContext';
 import { LoginModal } from '../components/LoginModal';
+import { SplineMarketScene } from '../components/SplineMarketScene';
 
 // ─────────────────────────────────────────
 // HOOKS
