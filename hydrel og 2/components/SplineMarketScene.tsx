@@ -39,7 +39,7 @@ import type { Application }  from '@splinetool/runtime'
 
 // ─── ⚙️  PASTE YOUR SCENE URL HERE ───────────────────────────────────────────
 const SCENE_URL =
-  'https://https://prod.spline.design/Vxi0uIWQs3nzsB1t/scene.splinecode'
+  'https://prod.spline.design/Vxi0uIWQs3nzsB1t/scene.splinecode'
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── Audio config ─────────────────────────────────────────────────────────────
