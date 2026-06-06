@@ -215,10 +215,9 @@ export const MarketAlpha: React.FC = () => {
         {/* ── STAT STRIP ── */}
         <div className="border-t border-emerald-800/60 bg-emerald-950/40 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
-            <StatCounter value={50000} suffix="+" label="Nodes Scanned Daily" />
-            <StatCounter value={99} suffix="%" label="Data Accuracy" />
-            <StatCounter value={48} suffix="hr" label="Deployment Time" />
-            <StatCounter value={1} suffix="%" label="False Signal Rate" prefix="<" />
+            <StatCounter value={500} suffix="+" label="Nodes Scanned per analysis" />
+            <StatCounter value={97.8} suffix="%" label="Data Accuracy" />
+            <StatCounter value={2.8} suffix="%" label="False Signal Rate" prefix="<" />
           </div>
         </div>
       </div>
