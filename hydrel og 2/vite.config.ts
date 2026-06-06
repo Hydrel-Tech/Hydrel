@@ -64,9 +64,9 @@ export default defineConfig({
   server: {
     warmup: {
       clientFiles: [
-        './src/components/R3FBackground.tsx',
-        './src/components/EngineViewer.tsx',
-        './src/components/ProceduralSkyscraper.tsx', // ← NEW
+        './components/R3FBackground.tsx',
+        './components/EngineViewer.tsx',
+        './components/ProceduralSkyscraper.tsx', // ← NEW
       ],
     },
   },
