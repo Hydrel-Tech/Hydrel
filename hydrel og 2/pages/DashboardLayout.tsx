@@ -521,7 +521,7 @@ export const DashboardLayout: React.FC = () => {
               <div className="flex-1 overflow-hidden">
                 <USAmap
                   selectedRegions={selectedRegionIds}
-                  onRegionToggle={toggleRegion}
+                  onRegionClick={toggleRegion}
                   maxRegions={maxRegions}
                   lockedRegions={hasAnalyzed ? savedRegions : []}
                 />
