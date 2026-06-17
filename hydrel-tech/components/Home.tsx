@@ -6,6 +6,7 @@ import { ArchitecturesGrid } from './ArchitecturesGrid';
 import { FeaturedSystem } from './FeaturedSystem';
 import { HowItWorks } from './HowItWorks';
 import { ContactSection } from './ContactSection';
+import Lightfall from '../src/components/react-bits/Lightfall';
 
 export const Home: React.FC = () => {
   const { hash } = useLocation();
@@ -23,12 +24,18 @@ export const Home: React.FC = () => {
   }, [hash]);
 
   return (
-    <div 
-      className="bg-cover bg-center bg-fixed relative transition-colors duration-300"
-      style={{ backgroundImage: 'url("/images/dashboard-bg.webp")' }}
-    >
+    <div className="relative transition-colors duration-300">
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Lightfall
+          colors={['#A6C8FF', '#5227FF', '#FF9FFC']}
+          backgroundColor="#000000"
+          speed={0.5}
+          streakCount={3}
+          opacity={0.8}
+        />
+      </div>
       {/* Dynamic overlay to enhance background visibility and depth */}
-      <div className="absolute inset-0 bg-indigo-950/10 dark:bg-slate-950/80 pointer-events-none transition-colors duration-300"></div>
+      <div className="absolute inset-0 bg-indigo-950/10 dark:bg-slate-950/80 pointer-events-none transition-colors duration-300 z-0"></div>
       
       <section id="hero" className="relative z-10">
         <Hero />
