@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LoginModal } from '../components/LoginModal';
+import BorderGlow from '../src/components/react-bits/BorderGlow';
 
 export const MarketAlpha: React.FC = () => {
   const { user } = useAuth();
@@ -126,6 +127,16 @@ export const MarketAlpha: React.FC = () => {
             className="inline-block px-10 py-5 bg-emerald-600 text-white font-bold rounded-xl shadow-xl shadow-emerald-500/30 hover:bg-emerald-700 hover:scale-[1.02] transition-all transform duration-200"
           >
             Get System
+          </button>
+          <p className="mt-4 text-xs text-slate-400 dark:text-slate-500 font-medium transition-colors duration-300">Deployed within 48 hours to secure infrastructure.</p>
+        </div>
+      </div>
+
+      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+    </div>
+  );
+};
+         Get System
           </button>
           <p className="mt-4 text-xs text-slate-400 dark:text-slate-500 font-medium transition-colors duration-300">Deployed within 48 hours to secure infrastructure.</p>
         </div>
