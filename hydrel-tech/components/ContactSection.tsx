@@ -12,8 +12,17 @@ export const ContactSection: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-6 transition-colors duration-300">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-16 p-8 md:p-20 rounded-[3rem] bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 transition-colors duration-300">
-        <div className="max-w-xl text-center md:text-left">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-16 p-8 md:p-20 rounded-[3rem] bg-white/90 dark:bg-slate-800/90 border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 transition-colors duration-300 backdrop-blur-sm relative overflow-hidden">
+        {/* Strands Effect Background */}
+        <div className="absolute inset-0 z-0 opacity-50 pointer-events-none">
+          <Strands 
+            colors={['#5227ff', '#ff9ffc', '#5227ff']} 
+            count={3} 
+            opacity={0.3} 
+          />
+        </div>
+
+        <div className="max-w-xl text-center md:text-left relative z-10">
           <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-6 leading-tight transition-colors duration-300">
             Ready to simulate your <br className="hidden lg:block" /> next architecture?
           </h2>
@@ -62,6 +71,17 @@ export const ContactSection: React.FC = () => {
               >
                 Request Simulation
               </button>
+              <p className="text-[10px] text-center text-slate-400 dark:text-slate-500 px-4 leading-tight transition-colors duration-300">
+                Only use this form if you require a guided demonstration or video proof of the active architecture. For all other inquiries or to deploy immediately, please use the "Learn More" buttons on the specific architecture pages.
+              </p>
+            </form>
+          )}
+        </div>
+      </BorderGlow>
+    </div>
+  );
+};
+n>
               <p className="text-[10px] text-center text-slate-400 dark:text-slate-500 px-4 leading-tight transition-colors duration-300">
                 Only use this form if you require a guided demonstration or video proof of the active architecture. For all other inquiries or to deploy immediately, please use the "Learn More" buttons on the specific architecture pages.
               </p>
