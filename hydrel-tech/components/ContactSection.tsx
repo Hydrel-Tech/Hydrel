@@ -1,5 +1,6 @@
 
-import BorderGlow from '@/src/components/react-bits/BorderGlow';
+import { BorderGlow } from '../src/components/react-bits/BorderGlow';
+import { Strands } from '../src/components/react-bits/Strands';
 import React, { useState } from 'react';
 
 export const ContactSection: React.FC = () => {
