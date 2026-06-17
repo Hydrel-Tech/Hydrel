@@ -1,6 +1,6 @@
 
-import { BorderGlow } from '../src/components/react-bits/BorderGlow';
-import { Strands } from '../src/components/react-bits/Strands';
+import BorderGlow from '../src/components/react-bits/BorderGlow';
+import Strands from '../src/components/react-bits/Strands';
 import React, { useState } from 'react';
 
 export const ContactSection: React.FC = () => {
@@ -80,6 +80,7 @@ export const ContactSection: React.FC = () => {
             </form>
           )}
         </div>
+      </div>
       </BorderGlow>
     </div>
   );
