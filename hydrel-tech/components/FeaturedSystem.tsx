@@ -4,12 +4,27 @@ import { Link } from 'react-router-dom';
 
 export const FeaturedSystem: React.FC = () => {
   return (
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="relative p-8 md:p-16 rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden shadow-2xl">
-        {/* Background texture */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
-        </div>
+    <div className="max-w-7xl mx-auto px-6 relative">
+      <div className="absolute inset-0 z-0 opacity-40 blur-3xl">
+        <Orb hue={260} hoverIntensity={0.5} />
+      </div>
+      <BorderGlow
+        edgeSensitivity={30}
+        glowColor="40 80 80"
+        backgroundColor="transparent"
+        borderRadius={40}
+        glowRadius={120}
+        glowIntensity={2}
+        coneSpread={45}
+        animated
+        colors={['#5227ff', '#ff9ffc', '#5227ff']}
+        className="relative z-10"
+      >
+        <div className="relative p-8 md:p-16 rounded-[2.5rem] bg-indigo-900/90 text-white overflow-hidden shadow-2xl backdrop-blur-sm">
+          {/* Background texture */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
+            <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+          </div>
 
         <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
           <div>
@@ -60,48 +75,8 @@ export const FeaturedSystem: React.FC = () => {
           </div>
 
           <div className="relative">
-            <div className="glass-card rounded-3xl p-8 border-indigo-400/20 shadow-2xl">
-              <div className="flex items-center justify-between mb-12">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-400/50"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-400/50"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-400/50"></div>
-                </div>
-                <div className="text-[10px] font-mono text-indigo-300 uppercase tracking-widest">System Monitor</div>
-              </div>
-
-              <div className="space-y-6">
-                {[
-                  { label: 'Proprietary Valuation Index', value: 98.4, color: 'bg-cyan-400' },
-                  { label: 'Risk Calibration Level', value: 72.1, color: 'bg-indigo-400' },
-                  { label: 'Market Sentiment Drift', value: 45.8, color: 'bg-purple-400' }
-                ].map((stat, i) => (
-                  <div key={i}>
-                    <div className="flex justify-between text-xs font-bold mb-2 uppercase tracking-tighter">
-                      <span>{stat.label}</span>
-                      <span>{stat.value}%</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                      <div className={`h-full ${stat.color} rounded-full`} style={{ width: `${stat.value}%` }}></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-12 p-4 rounded-xl bg-indigo-800/50 border border-white/5 font-mono text-[10px] text-indigo-300">
-                <div className="flex justify-between mb-1">
-                  <span>SYSTEM_LOAD:</span>
-                  <span>OPTIMAL</span>
-                </div>
-                <div className="flex justify-between mb-1">
-                  <span>API_SYNC:</span>
-                  <span>ESTABLISHED</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>LATENCY:</span>
-                  <span>14ms</span>
-                </div>
-              </div>
+            <div className="rounded-3xl border-indigo-400/20 shadow-2xl overflow-hidden h-[400px]">
+              <GridScan />
             </div>
 
             {/* Desktop: center it below the "proprietary valuation index / risk calculation level / market sentiment drift" graph (the little graph area) */}
