@@ -82,13 +82,3 @@ export const ContactSection: React.FC = () => {
   );
 };
 n>
-              <p className="text-[10px] text-center text-slate-400 dark:text-slate-500 px-4 leading-tight transition-colors duration-300">
-                Only use this form if you require a guided demonstration or video proof of the active architecture. For all other inquiries or to deploy immediately, please use the "Learn More" buttons on the specific architecture pages.
-              </p>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
