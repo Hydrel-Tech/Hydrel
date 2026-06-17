@@ -1,4 +1,5 @@
 
+import BorderGlow from '@/src/components/react-bits/BorderGlow';
 import React, { useState } from 'react';
 
 export const ContactSection: React.FC = () => {
@@ -12,8 +13,9 @@ export const ContactSection: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-6 transition-colors duration-300">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-16 p-8 md:p-20 rounded-[3rem] bg-white/90 dark:bg-slate-800/90 border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 transition-colors duration-300 backdrop-blur-sm relative overflow-hidden">
-        {/* Strands Effect Background */}
+      <BorderGlow>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-16 p-8 md:p-20 rounded-[3rem] bg-white/90 dark:bg-slate-800/90 border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 transition-colors duration-300 backdrop-blur-sm relative overflow-hidden">
+          {/* Strands Effect Background */}
         <div className="absolute inset-0 z-0 opacity-50 pointer-events-none">
           <Strands 
             colors={['#5227ff', '#ff9ffc', '#5227ff']} 
@@ -81,4 +83,3 @@ export const ContactSection: React.FC = () => {
     </div>
   );
 };
-
