@@ -1,6 +1,9 @@
-import BorderGlow from '@/src/components/react-bits/BorderGlow';
+
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Orb } from '../src/components/react-bits/Orb';
+import { BorderGlow } from '../src/components/react-bits/BorderGlow';
+import { GridScan } from '../src/components/react-bits/GridScan';
 
 export const FeaturedSystem: React.FC = () => {
   return (
@@ -98,6 +101,7 @@ export const FeaturedSystem: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </BorderGlow>
+  </div>
   );
 };
