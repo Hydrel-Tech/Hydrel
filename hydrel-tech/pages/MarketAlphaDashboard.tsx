@@ -1563,21 +1563,4 @@ export const MarketAlphaDashboard: React.FC = () => {
     </div>
   );
 };
-     className="flex-1 py-4 bg-indigo-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:scale-[1.02] transition-all"
-               >
-                 Confirm & Execute
-               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showIntro && <DashboardIntroOverlay onClose={() => setShowIntro(false)} />}
-      </div>
-    </div>
-  );
-};
-  </div>
-    </div>
-  );
-};
+    
