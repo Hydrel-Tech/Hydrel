@@ -117,26 +117,59 @@ const bufX = useRef([]);
 const bufY = useRef([]); const bufT = useRef([]); const bufYaw = useRef([]);
 const s = THREE.MathUtils.clamp(sensitivity, 0, 1); const skewScale = THREE.MathUtils.lerp(0.06, 0.2, s); const tiltScale = THREE.MathUtils.lerp(0.12, 0.3, s); const yawScale = THREE.MathUtils.lerp(0.1, 0.28, s); const depthResponse = THREE.MathUtils.lerp(0.25, 0.45, s); const smoothTime = THREE.MathUtils.lerp(0.45, 0.12, s); const maxSpeed = Infinity;
 const yBoost = THREE.MathUtils.lerp(1.2, 1.6, s);
-useEffect(() => { const el = containerRef.current;
-if (!el) return;
-let leaveTimer = null; const onMove = e => {
-if (uiFaceActive) return;
-if (leaveTimer) {
-clearTimeout(leaveTimer);
-leaveTimer = null; }
-const rect = el.getBoundingClientRect(); const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1; const ny = -(((e.clientY - rect.top) / rect.height) * 2 - 1); lookTarget.current.set(nx, ny); }; const onClick = async () => { const nowSec = performance.now() / 1000; if (scanOnClick) pushScan(nowSec); if ( enableGyro && typeof window !== 'undefined' && window.DeviceOrientationEvent && DeviceOrientationEvent.requestPermission ) {
-try { await DeviceOrientationEvent.requestPermission(); } catch {
-// noop } } }; const onEnter = () => { if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; } }; const onLeave = () => { if (uiFaceActive) return; if (leaveTimer) clearTimeout(leaveTimer); leaveTimer = window.setTimeout( () => { lookTarget.current.set(0, 0); tiltTarget.current = 0; yawTarget.current = 0; }, Math.max(0, snapBackDelay || 0) ); }; el.addEventListener('mousemove', onMove); el.addEventListener('mouseenter', onEnter);
-if (scanOnClick) el.addEventListener('click', onClick);
-el.addEventListener('mouseleave', onLeave);
-return () => {
-el.removeEventListener('mousemove', onMove);
-el.removeEventListener('mouseenter', onEnter);
-el.removeEventListener('mouseleave', onLeave);
-if (scanOnClick) el.removeEventListener('click', onClick);
-if (leaveTimer) clearTimeout(leaveTimer);
-};
-}, [uiFaceActive, snapBackDelay, scanOnClick, enableGyro]);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    let leaveTimer: any = null;
+    const onMove = (e: MouseEvent) => {
+      if (uiFaceActive) return;
+      if (leaveTimer) {
+        clearTimeout(leaveTimer);
+        leaveTimer = null;
+      }
+      const rect = el.getBoundingClientRect();
+      const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const ny = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+      lookTarget.current.set(nx, ny);
+    };
+    const onClick = async () => {
+      const nowSec = performance.now() / 1000;
+      if (scanOnClick) pushScan(nowSec);
+      if (enableGyro && typeof window !== 'undefined' && (window as any).DeviceOrientationEvent && (DeviceOrientationEvent as any).requestPermission) {
+        try {
+          await (DeviceOrientationEvent as any).requestPermission();
+        } catch {
+          // noop
+        }
+      }
+    };
+    const onEnter = () => {
+      if (leaveTimer) {
+        clearTimeout(leaveTimer);
+        leaveTimer = null;
+      }
+    };
+    const onLeave = () => {
+      if (uiFaceActive) return;
+      if (leaveTimer) clearTimeout(leaveTimer);
+      leaveTimer = window.setTimeout(() => {
+        lookTarget.current.set(0, 0);
+        tiltTarget.current = 0;
+        yawTarget.current = 0;
+      }, Math.max(0, snapBackDelay || 0));
+    };
+    el.addEventListener('mousemove', onMove);
+    el.addEventListener('mouseenter', onEnter);
+    if (scanOnClick) el.addEventListener('click', onClick);
+    el.addEventListener('mouseleave', onLeave);
+    return () => {
+      el.removeEventListener('mousemove', onMove);
+      el.removeEventListener('mouseenter', onEnter);
+      el.removeEventListener('mouseleave', onLeave);
+      if (scanOnClick) el.removeEventListener('click', onClick);
+      if (leaveTimer) clearTimeout(leaveTimer);
+    };
+  }, [uiFaceActive, snapBackDelay, scanOnClick, enableGyro]);
 useEffect(() => {
 const container = containerRef.current;
 if (!container) return;
