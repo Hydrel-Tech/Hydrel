@@ -175,48 +175,60 @@ export const MarketAlphaPricing: React.FC = () => {
               const isLowerTier = !isVisitor && index < currentTierLevel;
 
               return (
-                <div 
-                  key={index} 
-                  className={`flex flex-col p-6 rounded-3xl border transition-all duration-300 ${
-                    isLowerTier 
-                      ? 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 opacity-60' 
-                      : `shadow-sm hover:shadow-xl ${tier.color} dark:bg-slate-800/80 border-slate-200 dark:border-slate-700`
-                  }`}
+                <BorderGlow
+                  key={index}
+                  edgeSensitivity={30}
+                  glowColor="40 80 80"
+                  backgroundColor="transparent"
+                  borderRadius={24}
+                  glowRadius={60}
+                  glowIntensity={1.5}
+                  coneSpread={45}
+                  animated
+                  colors={['#10b981', '#34d399', '#059669']}
                 >
-                  <div className="mb-4">
-                    <h3 className={`text-lg font-bold ${tier.textColor} dark:text-white mb-2 transition-colors duration-300`}>{tier.name}</h3>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-slate-900 dark:text-white transition-colors duration-300">{tier.price}</span>
-                      {tier.price !== '$0' && <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase transition-colors duration-300">/mo</span>}
-                    </div>
-                    {tier.discount && (
-                      <span className="inline-block mt-2 text-[10px] font-bold bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full uppercase tracking-wide transition-colors duration-300">
-                        {tier.discount}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex-grow mb-8">
-                    <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed transition-colors duration-300">
-                      {tier.desc}
-                    </p>
-                  </div>
-
-                  <button 
-                    onClick={() => handlePlanClick(index)}
-                    disabled={isLowerTier}
-                    className={`w-full py-3 font-bold rounded-xl shadow-lg transition-all text-xs uppercase tracking-wider
-                      ${isCurrentTier 
-                        ? 'bg-yellow-400 text-slate-900 hover:bg-yellow-300 shadow-yellow-400/20 scale-105 ring-2 ring-yellow-400 ring-offset-2' 
-                        : isHigherTier
-                          ? 'bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 hover:scale-[1.02] shadow-emerald-600/20'
-                          : 'bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none'
-                      }
-                    `}
+                  <div 
+                    className={`flex flex-col h-full p-6 rounded-3xl border transition-all duration-300 ${
+                      isLowerTier 
+                        ? 'bg-slate-100/90 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 opacity-60' 
+                        : `shadow-sm hover:shadow-xl ${tier.color} dark:bg-slate-800/80 border-slate-200 dark:border-slate-700`
+                    } backdrop-blur-sm`}
                   >
-                    {isCurrentTier ? 'CONTINUE' : 'CHOOSE PLAN'}
-                  </button>
-                </div>
+                    <div className="mb-4">
+                      <h3 className={`text-lg font-bold ${tier.textColor} dark:text-white mb-2 transition-colors duration-300`}>{tier.name}</h3>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black text-slate-900 dark:text-white transition-colors duration-300">{tier.price}</span>
+                        {tier.price !== '$0' && <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase transition-colors duration-300">/mo</span>}
+                      </div>
+                      {tier.discount && (
+                        <span className="inline-block mt-2 text-[10px] font-bold bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full uppercase tracking-wide transition-colors duration-300">
+                          {tier.discount}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex-grow mb-8">
+                      <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed transition-colors duration-300">
+                        {tier.desc}
+                      </p>
+                    </div>
+
+                    <button 
+                      onClick={() => handlePlanClick(index)}
+                      disabled={isLowerTier}
+                      className={`w-full mt-auto py-3 font-bold rounded-xl shadow-lg transition-all text-xs uppercase tracking-wider
+                        ${isCurrentTier 
+                          ? 'bg-yellow-400 text-slate-900 hover:bg-yellow-300 shadow-yellow-400/20 scale-105 ring-2 ring-yellow-400 ring-offset-2' 
+                          : isHigherTier
+                            ? 'bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 hover:scale-[1.02] shadow-emerald-600/20'
+                            : 'bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none'
+                        }
+                      `}
+                    >
+                      {isCurrentTier ? 'CONTINUE' : 'CHOOSE PLAN'}
+                    </button>
+                  </div>
+                </BorderGlow>
               );
             })}
           </div>
