@@ -6,6 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import USAmap from '../components/USAmap';
 import DashboardIntroOverlay from '../components/DashboardIntroOverlay';
+import Lightfall from '../src/components/react-bits/Lightfall';
+import InfiniteMenu from '../src/components/react-bits/InfiniteMenu';
+import LiquidEther from '../src/components/react-bits/LiquidEther';
 
 // --- Types & Constants ---
 type AgentMode = 'buying' | 'listing' | 'investor' | 'flipper';
@@ -138,6 +141,7 @@ export const MarketAlphaDashboard: React.FC = () => {
   const location = useLocation();
   const [showIntro, setShowIntro] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [bgEffect, setBgEffect] = useState<'lightfall' | 'hyperspeed' | 'galaxy'>('lightfall');
   
   // UI State
   const [agentMode, setAgentMode] = useState<AgentMode>('buying');
@@ -678,12 +682,32 @@ export const MarketAlphaDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans relative overflow-hidden transition-colors duration-300">
       {/* Background Image Layer */}
-      <div className="fixed inset-0 z-0 opacity-[0.6] pointer-events-none">
-        <img 
-          src="/images/hero-bg.webp" 
-          alt="" 
-          className="w-full h-full object-cover object-center"
-        />
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        {bgEffect === 'lightfall' && (
+          <Lightfall
+            colors={['#A6C8FF', '#5227FF', '#FF9FFC']}
+            backgroundColor="#000000"
+            speed={0.5}
+            streakCount={3}
+            opacity={0.6}
+          />
+        )}
+        {bgEffect === 'hyperspeed' && (
+          <Hyperspeed
+            effectOptions={{
+              colors: {
+                road: 0x5227ff,
+                island: 0x000000,
+                background: 0x000000,
+                left: 0xff9ffc,
+                right: 0x5227ff
+              }
+            }}
+          />
+        )}
+        {bgEffect === 'galaxy' && (
+          <Galaxy />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#f8fafc]/50 dark:via-slate-900/50 to-[#f8fafc] dark:to-slate-900"></div>
       </div>
 
@@ -866,6 +890,11 @@ export const MarketAlphaDashboard: React.FC = () => {
             
             {/* Question Input & Analyze Button */}
             <div className="bg-white dark:bg-slate-800 border border-orange-200 dark:border-orange-500/30 rounded-3xl p-6 flex-grow flex flex-col shadow-sm relative overflow-hidden">
+              {/* Liquid Ether Background */}
+              <div className="absolute inset-0 z-0 opacity-60">
+                <LiquidEther />
+              </div>
+              
               <div className="flex justify-between items-center mb-4 relative z-10">
                  <label className="block text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Analysis Directive</label>
                  <span className={`text-[9px] uppercase font-black ${limitReached ? 'text-red-500' : 'text-orange-500 dark:text-orange-400'}`}>
@@ -877,7 +906,7 @@ export const MarketAlphaDashboard: React.FC = () => {
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="E.g., Compare this property to market trends, analyze investment potential vs local cap rates..."
-                className="w-full flex-grow min-h-[150px] bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all resize-none mb-6 relative z-10 font-medium text-sm"
+                className="w-full flex-grow min-h-[150px] bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border-2 border-slate-100/50 dark:border-slate-700/50 rounded-2xl p-4 text-slate-800 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all resize-none mb-6 relative z-10 font-medium text-sm shadow-inner"
               />
 
               <button 
@@ -914,26 +943,18 @@ export const MarketAlphaDashboard: React.FC = () => {
           {/* Left Column (Controls) - ORDER: SECOND ON MOBILE, FIRST ON DESKTOP */}
           <div className="space-y-8 order-2 lg:order-1">
             
-            {/* Desktop Engine Selector */}
-            <div className="hidden lg:block bg-white dark:bg-slate-800 border-2 border-indigo-100 dark:border-slate-700 rounded-3xl p-2 shadow-sm transition-colors">
-               <div className="grid grid-cols-2 gap-2">
-                 {ENGINE_OPTIONS.map((engine) => (
-                   <button 
-                     key={engine.id}
-                     onClick={() => setAgentMode(engine.id)}
-                     className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all duration-300 border-2 ${
-                       agentMode === engine.id 
-                         ? 'bg-indigo-600 border-indigo-700 text-white shadow-lg shadow-indigo-600/20' 
-                         : 'bg-white dark:bg-slate-800 border-transparent text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300'
-                     }`}
-                   >
-                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={engine.icon} />
-                     </svg>
-                     <span className="text-[10px] font-black uppercase tracking-widest">{engine.label}</span>
-                   </button>
-                 ))}
-               </div>
+            {/* Desktop Engine Selector (Infinite Menu) */}
+            <div className="hidden lg:block bg-white dark:bg-slate-800 border-2 border-indigo-100 dark:border-slate-700 rounded-3xl p-2 shadow-sm transition-colors h-[300px] relative overflow-hidden">
+               <InfiniteMenu 
+                 items={ENGINE_OPTIONS.map(engine => ({
+                   image: `https://picsum.photos/seed/${engine.id}/900/900?grayscale`,
+                   link: engine.id,
+                   title: engine.label,
+                   description: `Activate ${engine.label} intelligence engine.`
+                 }))}
+                 scale={1.2}
+                 onItemClick={(item) => setAgentMode(item.link as AgentMode)}
+               />
             </div>
 
             {/* Engine Parameters Section */}
@@ -1539,6 +1560,24 @@ export const MarketAlphaDashboard: React.FC = () => {
 
       {showIntro && <DashboardIntroOverlay onClose={() => setShowIntro(false)} />}
       </div>
+    </div>
+  );
+};
+     className="flex-1 py-4 bg-indigo-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:scale-[1.02] transition-all"
+               >
+                 Confirm & Execute
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showIntro && <DashboardIntroOverlay onClose={() => setShowIntro(false)} />}
+      </div>
+    </div>
+  );
+};
+  </div>
     </div>
   );
 };
