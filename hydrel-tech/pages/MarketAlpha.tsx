@@ -136,13 +136,3 @@ export const MarketAlpha: React.FC = () => {
     </div>
   );
 };
-         Get System
-          </button>
-          <p className="mt-4 text-xs text-slate-400 dark:text-slate-500 font-medium transition-colors duration-300">Deployed within 48 hours to secure infrastructure.</p>
-        </div>
-      </div>
-
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
-    </div>
-  );
-};
