@@ -1,4 +1,4 @@
-
+import BorderGlow from '@/src/components/react-bits/BorderGlow';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
