@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Orb } from '../src/components/react-bits/Orb';
+import  Orb  from '../src/components/react-bits/Orb';
 import { BorderGlow } from '../src/components/react-bits/BorderGlow';
 import { GridScan } from '../src/components/react-bits/GridScan';
 
