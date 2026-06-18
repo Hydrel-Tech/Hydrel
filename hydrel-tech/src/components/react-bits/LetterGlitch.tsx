@@ -20,33 +20,24 @@ const getRandomChar = () => { return lettersAndSymbols[Math.floor(Math.random() 
 
 const getRandomColor = () => { return glitchColors[Math.floor(Math.random() * glitchColors.length)]; };
 
-const hexToRgb = hex => {
-
-const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-
-hex = hex.replace(shorthandRegex, (m, r, g, b) => {
-
-return r + r + g + g + b + b;
-
-});
-
-const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-
-return result
-
-? {
-
-r: parseInt(result[1], 16),
-
-g: parseInt(result[2], 16),
-
-b: parseInt(result[3], 16)
-
-}
-
-: null;
-
-};
+  const hexToRgb = hex => {
+    if (hex.startsWith('rgb')) {
+      const match = hex.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      return match ? { r: parseInt(match[1]), g: parseInt(match[2]), b: parseInt(match[3]) } : null;
+    }
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, (m, r, g, b) => {
+      return r + r + g + g + b + b;
+    });
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+      ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      }
+      : null;
+  };
 
 const interpolateColor = (start, end, factor) => { const result = {
 
