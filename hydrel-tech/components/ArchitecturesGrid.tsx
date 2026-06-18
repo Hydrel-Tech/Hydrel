@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ARCHITECTURES } from '../constants';
 import { SystemStatus } from '../types';
+import BorderGlow from '../src/components/react-bits/BorderGlow';
 
 export const ArchitecturesGrid: React.FC = () => {
   const getRoute = (id: string) => {
