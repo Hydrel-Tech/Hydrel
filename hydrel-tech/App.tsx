@@ -6,6 +6,7 @@ import { Footer } from './components/Footer';
 import { Home } from './components/Home';
 import ScrollToTop from './components/ScrollToTop';
 import { AuthProvider } from './context/AuthContext';
+import SplashCursor from './src/components/react-bits/SplashCursor';
 
 // Pages
 import { MarketAlpha } from './pages/MarketAlpha';
