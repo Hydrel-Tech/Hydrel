@@ -1,4 +1,4 @@
-import { Renderer, Program, Mesh, Color, Triangle } from 'ogl'; import { useEffect, useRef } from 'react'; import './Galaxy.css';
+import { Renderer, Program, Mesh, Color, Triangle, Vec3 } from 'ogl'; import { useEffect, useRef } from 'react'; import './Galaxy.css';
 
 const vertexShader = ` attribute vec2 uv; attribute vec2 position; varying vec2 vUv;
 void main() { vUv = uv; gl_Position = vec4(position, 0, 1);
